@@ -3,23 +3,26 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Real Car - Sistema de Caixa (Login Visual)</title>
+<title>Real Car - Sistema de Caixa (Login Visual) — Firebase Sync</title>
 <style>
   :root{
     --fundo:#1e1e1e; --painel:#2a2a2a; --borda:#444; --campo:#333;
     --vermelho:#d62828; --texto:#f8f9fa; --ok:#6ee7a8; --bad:#fca5a5; --warn:#facc15;
   }
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{margin:0;background:var(--fundo);color:var(--texto);font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
-  .login-container{display:flex;justify-content:center;align-items:center;height:100vh;background:#111;flex-direction:column;padding:16px}
-  .login-box{background:var(--painel);padding:28px;border-radius:12px;box-shadow:0 0 12px #000;width:320px;max-width:100%;text-align:center}
+  .login-container{display:flex;justify-content:center;align-items:center;min-height:100vh;background:#111;flex-direction:column;padding:16px}
+  .login-box{background:var(--painel);padding:28px;border-radius:12px;box-shadow:0 0 12px #000;width:320px;max-width:100%;text-align:center;border:1px solid var(--borda)}
   .login-box h1{margin:0 0 6px;color:var(--vermelho)}
   .login-box p{margin:0 0 18px;color:#ccc}
-  .login-box input{width:100%;padding:10px;margin-bottom:12px;border:none;border-radius:6px;background:#333;color:#fff}
+  .login-box input{width:100%;padding:10px;margin-bottom:12px;border:1px solid #555;border-radius:6px;background:#333;color:#fff}
   .login-box button{width:100%;padding:11px;background:var(--vermelho);color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer}
   .erro{color:#f87171;margin-top:8px;min-height:20px}
+  .muted{color:#aaa;font-size:12px;margin-top:6px}
+
   .container{display:none;max-width:1200px;margin:auto;padding:26px 18px}
-  .bloco{background:var(--painel);border-radius:12px;padding:22px;margin-bottom:24px;box-shadow:0 0 10px #00000088}
+  .bloco{background:var(--painel);border-radius:12px;padding:22px;margin-bottom:24px;box-shadow:0 0 10px #00000088;border:1px solid var(--borda)}
   .bloco h2{margin:0 0 12px;color:var(--vermelho);border-bottom:1px solid var(--borda);padding-bottom:8px}
   label{display:block;margin-top:10px;font-weight:600}
   input,select{width:100%;padding:10px;border-radius:6px;border:1px solid #555;background:var(--campo);color:#fff;font-size:15px}
@@ -28,43 +31,26 @@
   button{padding:10px 14px;border:none;border-radius:6px;background:var(--vermelho);color:#fff;font-weight:700;cursor:pointer}
   .secondary{background:#444}
   .danger{background:#7a0b0b}
-  table{width:100%;border-collapse:collapse;margin-top:12px}
-  th,td{padding:9px;border-bottom:1px solid #3a3a3a;font-size:14px;text-align:left}
-  th{color:#d0d0d0}
-  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
-  .pill{flex:1;min-width:160px;background:#111;border-radius:10px;padding:10px 12px;text-align:center}
-  .pill b{display:block;color:#bbb;margin-bottom:4px}
-  .ok{color:var(--ok)} .bad{color:var(--bad)} .neutral{color:var(--warn)}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center}
 
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{padding:9px;border-bottom:1px solid #3a3a3a;font-size:14px;text-align:left;vertical-align:top}
+  th{color:#d0d0d0}
+
+  .summary{display:flex;gap:12px;flex-wrap:wrap;margin-top:12px}
+  .pill{flex:1;min-width:160px;background:#111;border-radius:10px;padding:10px 12px;text-align:center;border:1px solid var(--borda)}
+  .pill b{display:block;color:#bbb;margin-bottom:4px}
+  .ok{color:var(--ok)} .bad{color:var(--bad)} .neutral{color:var(--warn)}
+  .hint{color:#bdbdbd;font-size:12px;margin-top:6px;line-height:1.35}
+
+  /* responsivo: tabela -> cards */
   @media (max-width: 768px) {
-    .form-grid {
-      flex-direction: column;
-    }
-    table, thead, tbody, th, td, tr {
-      display: block;
-      width: 100%;
-    }
-    thead tr {
-      display: none;
-    }
-    tr {
-      margin-bottom: 15px;
-      border-bottom: 2px solid var(--borda);
-    }
-    td {
-      text-align: right;
-      padding-left: 50%;
-      position: relative;
-    }
-    td::before {
-      position: absolute;
-      left: 10px;
-      top: 10px;
-      white-space: nowrap;
-      color: #ccc;
-      font-weight: bold;
-    }
+    .form-grid { flex-direction: column; }
+    table, thead, tbody, th, td, tr { display: block; width: 100%; }
+    thead tr { display: none; }
+    tr { margin-bottom: 15px; border:1px solid var(--borda); border-radius:10px; overflow:hidden; }
+    td { text-align: right; padding-left: 50%; position: relative; }
+    td::before { position: absolute; left: 10px; top: 10px; white-space: nowrap; color: #ccc; font-weight: bold; }
     #tabelaEntradas td:nth-child(1)::before { content: "Data"; }
     #tabelaEntradas td:nth-child(2)::before { content: "Descrição"; }
     #tabelaEntradas td:nth-child(3)::before { content: "Tipo"; }
@@ -78,6 +64,11 @@
     #tabelaSaidas td:nth-child(4)::before { content: "Valor"; }
     #tabelaSaidas td:nth-child(5)::before { content: "Ações"; }
   }
+
+  /* pequenos detalhes */
+  .tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#3a3a3a;font-size:12px;margin-left:6px}
+  .right{float:right}
+  .nowrap{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -86,89 +77,125 @@
 <div id="loginTela" class="login-container">
   <div class="login-box">
     <h1>Real Car</h1>
-    <p>Sistema de Caixa</p>
+    <p>Sistema de Caixa (sincronizado)</p>
     <input id="usuario" type="text" placeholder="Usuário" autocomplete="off">
     <input id="senha" type="password" placeholder="Senha">
     <button onclick="fazerLogin()">Entrar</button>
     <div id="erroLogin" class="erro"></div>
+    <div class="muted">Dica: <b>admin</b> / <b>12345</b> • Pressione <b>Enter</b> no campo senha</div>
   </div>
 </div>
 
 <!-- APP -->
-<div id="app" class="container">
-  <!-- Entradas / Saídas -->
-  <div class="bloco">
-    <h2>Entradas</h2>
+<div id="app" class="container" aria-hidden="true">
+  <!-- Entradas -->
+  <div class="bloco" id="blocoEntradas">
+    <h2>
+      Entradas
+      <span class="tag">Realtime</span>
+    </h2>
     <div class="form-grid">
-      <div><label>Data</label><input id="dataEntrada" type="date"></div>
-      <div><label>Descrição</label><input id="clienteEntrada" type="text" placeholder="Ex: João - Celta prata (ABC1D23) - Dianteiro + Serviço"></div>
-      <div><label>Tipo</label>
-        
-<select id="tipoEntrada">
-  <option>Dianteiro</option>
-  <option>Traseiro</option>
-  <option>Dianteiro + Traseiro</option>
-  <option>Dianteiro + Traseiro + Serviço</option>
-  <option>Serviço</option>
-  <option>Ferro Velho</option>
-  <option>Hastes</option>
-</select>
-
-      
+      <div>
+        <label>Data</label>
+        <input id="dataEntrada" type="date" />
+      </div>
+      <div>
+        <label>Descrição</label>
+        <input id="clienteEntrada" type="text" placeholder="Ex.: Maria — Onix branco (QWE-9Z87) — dianteiro + serviço (troca coxim)">
+        <div class="hint">
+          Use <b>Nome — Carro/placa — peça/observação</b>. Ex.: João — Celta prata (ABC-1D23) — traseiro vazando.
+        </div>
+      </div>
+      <div>
+        <label>Tipo</label>
+        <select id="tipoEntrada">
+          <option>Dianteiro</option>
+          <option>Traseiro</option>
+          <option>Dianteiro + Traseiro</option>
+          <option>Dianteiro + Traseiro + Serviço</option>
+          <option>Serviço</option>
+          <option>Ferro Velho</option>
+          <option>Hastes</option>
+        </select>
+      </div>
       <div id="divServico" style="display:none">
         <label>Descrição do Serviço</label>
-        <input id="descricaoServico" type="text" placeholder="Ex: Troca de coxim, alinhamento...">
+        <input id="descricaoServico" type="text" placeholder="Ex.: Troca de coxim, alinhamento..." />
       </div>
-</div>
-      <div><label>Qtd</label><input id="qtdEntrada" type="number" value="1" min="1"></div>
-      <div><label>Forma</label>
-        <select id="formaEntrada"><option>Pix</option><option>Cartão</option><option>Dinheiro</option></select>
+      <div>
+        <label>Qtd</label>
+        <input id="qtdEntrada" type="number" value="1" min="1">
       </div>
-      <div><label>Valor (R$)</label><input id="valorEntrada" type="number" step="0.01"></div>
+      <div>
+        <label>Forma</label>
+        <select id="formaEntrada">
+          <option>Pix</option>
+          <option>Cartão</option>
+          <option>Dinheiro</option>
+        </select>
+      </div>
+      <div>
+        <label>Valor (R$)</label>
+        <input id="valorEntrada" type="number" step="0.01">
+      </div>
     </div>
-    <div class="toolbar"><button onclick="adicionarEntrada()">+ Adicionar Entrada</button></div>
-    <table id="tabelaEntradas"><thead>
-      <tr><th>Data</th><th>Cliente</th><th>Tipo</th><th>Qtd</th><th>Forma</th><th>Valor</th><th>Ações</th></tr>
-    </thead><tbody></tbody></table>
+    <div class="toolbar">
+      <button onclick="adicionarEntrada()">+ Adicionar Entrada</button>
+    </div>
+    <table id="tabelaEntradas">
+      <thead>
+        <tr>
+          <th>Data</th><th>Descrição</th><th>Tipo</th><th>Qtd</th><th>Forma</th><th>Valor</th><th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-  <div class="bloco">
+  <!-- Saídas -->
+  <div class="bloco" id="blocoSaidas">
     <h2>Saídas</h2>
     <div class="form-grid">
       <div><label>Data</label><input id="dataSaida" type="date"></div>
       <div><label>Descrição</label><input id="descricaoSaida" type="text"></div>
-      <div><label>Categoria</label>
-        
-<select id="categoriaSaida">
-  <option>Alimentação</option>
-  <option>Compra de Carcaça</option>
-  <option>Disco do Esmeril</option>
-  <option>Ferramentas</option>
-  <option>Órgônio/Nitrogênio</option>
-  <option>Outros</option>
-  <option>Peças</option>
-  <option>Supermercado</option>
-  <option>Tinta e Tinner</option>
-  <option>Transporte</option>
-  <option>Vareta de Solda</option>
-</select>
-
+      <div>
+        <label>Categoria</label>
+        <select id="categoriaSaida">
+          <option>Alimentação</option>
+          <option>Compra de Carcaça</option>
+          <option>Disco do Esmeril</option>
+          <option>Ferramentas</option>
+          <option>Órgônio/Nitrogênio</option>
+          <option>Outros</option>
+          <option>Peças</option>
+          <option>Supermercado</option>
+          <option>Tinta e Tinner</option>
+          <option>Transporte</option>
+          <option>Vareta de Solda</option>
+        </select>
       </div>
       <div><label>Valor (R$)</label><input id="valorSaida" type="number" step="0.01"></div>
     </div>
-    <div class="toolbar"><button onclick="adicionarSaida()">+ Adicionar Saída</button></div>
-    <table id="tabelaSaidas"><thead>
-      <tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ações</th></tr>
-    </thead><tbody></tbody></table>
+    <div class="toolbar">
+      <button onclick="adicionarSaida()">+ Adicionar Saída</button>
+    </div>
+    <table id="tabelaSaidas">
+      <thead>
+        <tr>
+          <th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <!-- Filtros e Resumo -->
-  <div class="bloco">
+  <div class="bloco" id="blocoResumo">
     <h2>Filtros e Resumo</h2>
     <div class="form-grid">
-      <div><label>Buscar</label><input id="campoBusca" type="text" placeholder="🔍 nome, tipo, forma..." oninput="atualizarTabelas()"></div>
-      <div><label>Filtro por Dia</label><input id="filtroDia" type="date" onchange="atualizarTabelas()"></div>
-      <div><label>Filtro por Mês</label><input id="filtroMes" type="month" onchange="atualizarTabelas()"></div>
+      <div><label>Buscar</label><input id="campoBusca" type="text" placeholder="🔍 nome, tipo, forma..." oninput="render()"></div>
+      <div><label>Filtro por Dia</label><input id="filtroDia" type="date" onchange="render()"></div>
+      <div><label>Filtro por Mês</label><input id="filtroMes" type="month" onchange="render()"></div>
     </div>
     <div class="summary">
       <div class="pill"><b>Total Entradas</b><span id="totalEntradas" class="ok">R$ 0,00</span></div>
@@ -181,7 +208,7 @@
   </div>
 
   <!-- Backup e Relatórios -->
-  <div class="bloco">
+  <div class="bloco" id="blocoRelatorios">
     <h2>Backup e Relatórios</h2>
     <div class="toolbar">
       <button class="secondary" onclick="limparFiltros()">🧹 Limpar Filtros</button>
@@ -197,8 +224,30 @@
 
 <div id="printArea" style="display:none"></div>
 
-<script>
-  // ====== Login visual ======
+<!-- ========================== APP SCRIPT (com Firebase) ========================== -->
+<script type="module">
+  // Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
+    onSnapshot, getDocs, query, orderBy, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // === CONFIG FIREBASE DO SEU PROJETO ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyCaaZf78WgruFolJ0FfLKrn7cKjsS00dc0",
+    authDomain: "realcar-caixa.firebaseapp.com",
+    projectId: "realcar-caixa",
+    storageBucket: "realcar-caixa.firebasestorage.app",
+    messagingSenderId: "853035037951",
+    appId: "1:853035037951:web:5ae763aa016d204acfc8ca"
+  };
+
+  // === INIT APP & DB ===
+  const appFB = initializeApp(firebaseConfig);
+  const db = getFirestore(appFB);
+
+  // ====== Login ======
   const usuarioPadrao="admin", senhaPadrao="12345";
   function fazerLogin(){
     const u=document.getElementById('usuario').value.trim();
@@ -207,287 +256,17 @@
     if(u===usuarioPadrao && s===senhaPadrao){
       msg.textContent="";
       document.getElementById('loginTela').style.display='none';
-      document.getElementById('app').style.display='block';
+      const appEl=document.getElementById('app');
+      appEl.style.display='block';
+      appEl.removeAttribute('aria-hidden');
       init();
     }else{
       msg.textContent="Usuário ou senha incorretos!";
     }
   }
+  window.fazerLogin=fazerLogin;
 
-  // ====== Estado & Storage ======
-  const LS_KEY='realcar_caixa_v3_visual';
-  let entradas=[], saidas=[];
-
-  function salvar(){ localStorage.setItem(LS_KEY, JSON.stringify({entradas,saidas})); }
-  function carregar(){
-    try{
-      const raw=localStorage.getItem(LS_KEY);
-      if(!raw) return;
-      const data=JSON.parse(raw);
-      entradas = Array.isArray(data.entradas)? data.entradas:[];
-      saidas   = Array.isArray(data.saidas)?   data.saidas  :[];
-    }catch(e){}
-  }
-
-  // ====== Utils ======
-  const hojeISO = ()=> new Date().toLocaleDateString('fr-CA');
-  const BRL = v => parseFloat(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  const esc = s => String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
-
-  // ====== Init ======
-  
-function init(){
-  document.getElementById("tipoEntrada").addEventListener("change", () => {
-    const tipo = document.getElementById("tipoEntrada").value;
-    document.getElementById("divServico").style.display = (tipo === "Serviço" || tipo === "Dianteiro + Traseiro + Serviço") ? "block" : "none";
-  });
-
-    document.getElementById('dataEntrada').value = hojeISO();
-    document.getElementById('dataSaida').value   = hojeISO();
-    carregar(); atualizarTabelas();
-  }
-
-  // ====== Filtros/Busca ======
-  function filtroAtivo(dataISO){
-    const dia=document.getElementById('filtroDia').value;
-    const mes=document.getElementById('filtroMes').value;
-    if(dia) return dataISO===dia;
-    if(mes) return dataISO.startsWith(mes);
-    return true;
-  }
-  function atendeBuscaEntrada(e,q){
-    const s=(q||'').toLowerCase();
-    return (e.cliente||'').toLowerCase().includes(s) ||
-           (e.tipo||'').toLowerCase().includes(s) ||
-           (e.forma||'').toLowerCase().includes(s);
-  }
-  function atendeBuscaSaida(x,q){
-    const s=(q||'').toLowerCase();
-    return (x.descricao||'').toLowerCase().includes(s) ||
-           (x.categoria||'').toLowerCase().includes(s);
-  }
-
-  // ====== CRUD Entradas ======
-  function adicionarEntrada(){
-    const e={
-      id:crypto.randomUUID(),
-      data: document.getElementById('dataEntrada').value || hojeISO(),
-      cliente: (document.getElementById('clienteEntrada').value||'').trim(),
-      tipo: document.getElementById('tipoEntrada').value,
-      qtd: parseInt(document.getElementById('qtdEntrada').value||'1',10),
-      forma: document.getElementById('formaEntrada').value,
-      
-valor: parseFloat(String(document.getElementById('valorEntrada').value).replace(',','.')),
-descricao: ['Serviço', 'Dianteiro + Traseiro + Serviço'].includes(document.getElementById('tipoEntrada').value) ? document.getElementById('descricaoServico').value.trim() : ''
-
-    };
-    if(!e.cliente || isNaN(e.valor) || e.valor<=0){ alert('Preencha cliente e valor válido.'); return; }
-    entradas.push(e); salvar();
-    document.getElementById('clienteEntrada').value='';
-    document.getElementById('qtdEntrada').value='1';
-    
-document.getElementById('valorEntrada').value='';
-document.getElementById('descricaoServico').value='';
-document.getElementById('divServico').style.display='none';
-
-    atualizarTabelas();
-  }
-  function editarEntrada(id){
-    const e=entradas.find(x=>x.id===id); if(!e) return;
-    const cliente=prompt('Cliente/Carro:', e.cliente); if(cliente===null) return;
-    const tipo=prompt('Tipo:', e.tipo); if(tipo===null) return;
-    const qtd=prompt('Quantidade:', e.qtd); if(qtd===null||isNaN(parseInt(qtd))) return;
-    const forma=prompt('Forma (Pix/Cartão/Dinheiro):', e.forma); if(forma===null) return;
-    const valor=prompt('Valor (R$):', e.valor); if(valor===null||isNaN(parseFloat(valor))) return;
-    e.cliente=cliente.trim(); e.tipo=tipo; e.qtd=parseInt(qtd,10); e.forma=forma; e.valor=parseFloat(String(valor).replace(',','.'));
-    salvar(); atualizarTabelas();
-  }
-  function excluirEntrada(id){
-    if(!confirm('Excluir esta entrada?')) return;
-    entradas=entradas.filter(x=>x.id!==id); salvar(); atualizarTabelas();
-  }
-
-  // ====== CRUD Saídas ======
-  function adicionarSaida(){
-    const s={
-      id:crypto.randomUUID(),
-      data: document.getElementById('dataSaida').value || hojeISO(),
-      descricao: (document.getElementById('descricaoSaida').value||'').trim(),
-      categoria: document.getElementById('categoriaSaida').value,
-      valor: parseFloat(String(document.getElementById('valorSaida').value).replace(',','.'))
-    };
-    if(!s.descricao || isNaN(s.valor) || s.valor<=0){ alert('Preencha descrição e valor válido.'); return; }
-    saidas.push(s); salvar();
-    document.getElementById('descricaoSaida').value='';
-    document.getElementById('valorSaida').value='';
-    atualizarTabelas();
-  }
-  function editarSaida(id){
-    const s=saidas.find(x=>x.id===id); if(!s) return;
-    const desc=prompt('Descrição:', s.descricao); if(desc===null) return;
-    const cat=prompt('Categoria:', s.categoria); if(cat===null) return;
-    const val=prompt('Valor (R$):', s.valor); if(val===null||isNaN(parseFloat(val))) return;
-    s.descricao=desc.trim(); s.categoria=cat; s.valor=parseFloat(String(val).replace(',','.'));
-    salvar(); atualizarTabelas();
-  }
-  function excluirSaida(id){
-    if(!confirm('Excluir esta saída?')) return;
-    saidas=saidas.filter(x=>x.id!==id); salvar(); atualizarTabelas();
-  }
-
-  // ====== Render ======
-  function atualizarTabelas(){
-    const busca=document.getElementById('campoBusca').value||'';
-
-    const ent=entradas.filter(e=>filtroAtivo(e.data))
-                      .filter(e=>!busca || atendeBuscaEntrada(e,busca))
-                      .sort((a,b)=>a.data.localeCompare(b.data));
-    const sai=saidas.filter(s=>filtroAtivo(s.data))
-                    .filter(s=>!busca || atendeBuscaSaida(s,busca))
-                    .sort((a,b)=>a.data.localeCompare(b.data));
-
-    // Entradas
-    const te=document.querySelector('#tabelaEntradas tbody');
-    te.innerHTML=ent.map(e=>`
-      <tr>
-        <td>${esc(e.data)}</td>
-        <td>${esc(e.cliente)}</td>
-        <td>${esc(e.tipo)+(e.descricao ? ' - '+esc(e.descricao) : '')}</td>
-        <td>${e.qtd||1}</td>
-        <td>${esc(e.forma)}</td>
-        <td>${BRL(e.valor)}</td>
-        <td>
-          <button class="secondary" onclick="editarEntrada('${e.id}')">✏️</button>
-          <button class="danger" onclick="excluirEntrada('${e.id}')">🗑️</button>
-        </td>
-      </tr>`).join('');
-
-    // Saídas
-    const ts=document.querySelector('#tabelaSaidas tbody');
-    ts.innerHTML=sai.map(s=>`
-      <tr>
-        <td>${esc(s.data)}</td>
-        <td>${esc(s.descricao)}</td>
-        <td>${esc(s.categoria)}</td>
-        <td>${BRL(s.valor)}</td>
-        <td>
-          <button class="secondary" onclick="editarSaida('${s.id}')">✏️</button>
-          <button class="danger" onclick="excluirSaida('${s.id}')">🗑️</button>
-        </td>
-      </tr>`).join('');
-
-    // Totais
-    const totE=ent.reduce((acc,e)=>acc+e.valor,0);
-    const totS=sai.reduce((acc,s)=>acc+s.valor,0);
-    document.getElementById('totalEntradas').textContent=BRL(totE);
-    document.getElementById('totalSaidas').textContent=BRL(totS);
-    const saldoEl=document.getElementById('saldo');
-    saldoEl.textContent=BRL(totE-totS);
-    saldoEl.style.color=(totE-totS)>=0? 'var(--ok)':'var(--bad)';
-
-    const pix=ent.filter(e=>e.forma==='Pix').reduce((s,e)=>s+e.valor,0);
-    const cartao=ent.filter(e=>e.forma==='Cartão').reduce((s,e)=>s+e.valor,0);
-    const dinheiro=ent.filter(e=>e.forma==='Dinheiro').reduce((s,e)=>s+e.valor,0);
-    document.getElementById('totalPix').textContent=BRL(pix);
-    document.getElementById('totalCartao').textContent=BRL(cartao);
-    document.getElementById('totalDinheiro').textContent=BRL(dinheiro);
-  }
-
-  function limparFiltros(){
-    document.getElementById('campoBusca').value='';
-    document.getElementById('filtroDia').value='';
-    document.getElementById('filtroMes').value='';
-    atualizarTabelas();
-  }
-
-  // ====== Exportações / Backup ======
-  function exportarCSV(){
-    const dia=document.getElementById('filtroDia').value;
-    const mes=document.getElementById('filtroMes').value;
-    const busca=document.getElementById('campoBusca').value||'';
-    const filtra = d => (dia? d===dia : (mes? d.startsWith(mes) : true));
-
-    const ent=entradas.filter(e=>filtra(e.data)&&(!busca||atendeBuscaEntrada(e,busca)));
-    const sai=saidas.filter(s=>filtra(s.data)&&(!busca||atendeBuscaSaida(s,busca)));
-
-    let csv='Tipo,Data,Descrição,Detalhes,Valor\n';
-    ent.forEach(e=> csv+=`Entrada,${e.data},${csvEsc(e.cliente)},${csvEsc(e.tipo)} (${e.forma}),${e.valor}\n`);
-    sai.forEach(s=> csv+=`Saída,${s.data},${csvEsc(s.descricao)},${csvEsc(s.categoria)},${s.valor}\n`);
-
-    const blob=new Blob(["\uFEFF"+csv],{type:'text/csv;charset=utf-8;'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download= dia? `realcar_${dia}.csv` : (mes? `realcar_${mes}.csv` : 'realcar_todos.csv');
-    a.click(); URL.revokeObjectURL(a.href);
-  }
-  function csvEsc(s){ if(s==null) return ''; s=String(s); return /[,";\n]/.test(s)? `"${s.replace(/"/g,'""')}"` : s; }
-
-  function exportarJSON(){
-    const blob=new Blob([JSON.stringify({entradas,saidas},null,2)],{type:'application/json'});
-    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='realcar_backup.json'; a.click();
-  }
-  function importarJSON(ev){
-    const file=ev.target.files[0]; if(!file) return;
-    const r=new FileReader();
-    r.onload=e=>{ try{
-        const d=JSON.parse(e.target.result);
-        entradas=Array.isArray(d.entradas)?d.entradas:[]; saidas=Array.isArray(d.saidas)?d.saidas:[];
-        salvar(); atualizarTabelas(); alert('Backup importado!');
-      }catch(err){ alert('Arquivo inválido.'); } };
-    r.readAsText(file);
-  }
-
-  // ====== Relatórios ======
-  function imprimirRelatorio(){
-    const dia=document.getElementById('filtroDia').value;
-    const mes=document.getElementById('filtroMes').value;
-    const busca=document.getElementById('campoBusca').value||'';
-    const filtra = d => (dia? d===dia : (mes? d.startsWith(mes) : true));
-
-    const ent=entradas.filter(e=>filtra(e.data)&&(!busca||atendeBuscaEntrada(e,busca)));
-    const sai=saidas.filter(s=>filtra(s.data)&&(!busca||atendeBuscaSaida(s,busca)));
-
-    const totE=ent.reduce((a,e)=>a+e.valor,0);
-    const totS=sai.reduce((a,e)=>a+e.valor,0);
-
-    const area=document.getElementById('printArea');
-    const titulo= dia? `Relatório do dia ${dia}` : (mes? `Relatório do mês ${mes}` : 'Relatório geral');
-    area.innerHTML=`
-      <div style="font-family:Arial;color:#000;width:720px;margin:auto">
-        <h2 style="margin:6px 0">📄 ${titulo} – Real Car Amortecedores</h2><hr/>
-        <h3>Entradas</h3>
-        <ul>${ent.map(e=>`<li>${e.data} – ${esc(e.cliente)} (${esc(e.tipo)+(e.descricao ? ' - '+esc(e.descricao) : '')}, ${esc(e.forma)}) – ${BRL(e.valor)}</li>`).join('')}</ul>
-        <h3>Saídas</h3>
-        <ul>${sai.map(s=>`<li>${s.data} – ${esc(s.descricao)} (${esc(s.categoria)}) – ${BRL(s.valor)}</li>`).join('')}</ul>
-        <hr/><p><b>Total Entradas:</b> ${BRL(totE)}<br><b>Total Saídas:</b> ${BRL(totS)}<br><b>Saldo:</b> ${BRL(totE-totS)}</p>
-      </div>`;
-    setTimeout(()=>window.print(),100);
-  }
-
-  function fecharMes(){
-    const mes=document.getElementById('filtroMes').value || new Date().toISOString().slice(0,7);
-    const ent=entradas.filter(e=>e.data.startsWith(mes));
-    const sai=saidas.filter(s=>s.data.startsWith(mes));
-    const totE=ent.reduce((a,e)=>a+e.valor,0);
-    const totS=sai.reduce((a,e)=>a+e.valor,0);
-    alert(`📅 Fechamento ${mes}\nEntradas: ${BRL(totE)}\nSaídas: ${BRL(totS)}\nSaldo: ${BRL(totE-totS)}`);
-  }
-
-  function apagarTudo(){
-  const senha = prompt("Digite a senha para confirmar:");
-  if (senha !== senhaPadrao) {
-    alert("❌ Senha incorreta!");
-    return;
-  }
-
-    if(!confirm('Tem certeza que deseja apagar TODOS os dados?')) return;
-    entradas=[]; saidas=[]; salvar(); atualizarTabelas();
-  }
-</script>
-</body>
-</html>
-
-<script>
+  // enter no login
   document.addEventListener('DOMContentLoaded', () => {
     const senhaInput = document.getElementById('senha');
     if (senhaInput) {
@@ -496,4 +275,336 @@ document.getElementById('divServico').style.display='none';
       });
     }
   });
+
+  // ====== Estado em memória (renderização) ======
+  let entradas=[], entradasIDs=[];
+  let saidas=[], saidasIDs=[];
+
+  // ====== Utils ======
+  const hojeISO = ()=> new Date().toLocaleDateString('fr-CA'); // yyyy-mm-dd
+  const BRL = v => (parseFloat(v||0)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  const esc = s => String(s??"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
+  const parseNum = v => parseFloat(String(v).replace(',','.'));
+
+  // ====== Inicialização de UI + stream realtime ======
+  function init(){
+    // mostra/oculta campo de serviço
+    document.getElementById("tipoEntrada").addEventListener("change", () => {
+      const tipo = document.getElementById("tipoEntrada").value;
+      document.getElementById("divServico").style.display =
+        (tipo === "Serviço" || tipo === "Dianteiro + Traseiro + Serviço") ? "block" : "none";
+    });
+
+    document.getElementById('dataEntrada').value = hojeISO();
+    document.getElementById('dataSaida').value   = hojeISO();
+
+    // ouvintes em tempo real Firestore
+    onSnapshot(query(collection(db,'entradas'), orderBy('data','asc')), snap=>{
+      entradas = snap.docs.map(d=>d.data());
+      entradasIDs = snap.docs.map(d=>d.id);
+      render();
+    });
+    onSnapshot(query(collection(db,'saidas'), orderBy('data','asc')), snap=>{
+      saidas = snap.docs.map(d=>d.data());
+      saidasIDs = snap.docs.map(d=>d.id);
+      render();
+    });
+  }
+
+  // ====== Filtros/Busca ======
+  function filtroAtivo(dataISO){
+    const dia=document.getElementById('filtroDia').value;
+    const mes=document.getElementById('filtroMes').value;
+    if(dia) return dataISO===dia;
+    if(mes) return (dataISO||'').startsWith(mes);
+    return true;
+  }
+  function atendeBuscaEntrada(e,q){
+    const s=(q||'').toLowerCase();
+    return (e.cliente||'').toLowerCase().includes(s) ||
+           (e.tipo||'').toLowerCase().includes(s) ||
+           (e.forma||'').toLowerCase().includes(s) ||
+           (e.descricao||'').toLowerCase().includes(s);
+  }
+  function atendeBuscaSaida(x,q){
+    const s=(q||'').toLowerCase();
+    return (x.descricao||'').toLowerCase().includes(s) ||
+           (x.categoria||'').toLowerCase().includes(s);
+  }
+
+  // ====== CRUD Entradas (Firestore) ======
+  async function adicionarEntrada(){
+    const tipoEl=document.getElementById('tipoEntrada');
+    const nova={
+      data: document.getElementById('dataEntrada').value || hojeISO(),
+      cliente: (document.getElementById('clienteEntrada').value||'').trim(),
+      tipo: tipoEl.value,
+      qtd: parseInt(document.getElementById('qtdEntrada').value||'1',10),
+      forma: document.getElementById('formaEntrada').value,
+      valor: parseNum(document.getElementById('valorEntrada').value),
+      descricao: (['Serviço','Dianteiro + Traseiro + Serviço'].includes(tipoEl.value)
+                 ? (document.getElementById('descricaoServico').value||'').trim()
+                 : ''),
+      createdAt: serverTimestamp()
+    };
+    if(!nova.cliente || isNaN(nova.valor) || nova.valor<=0){
+      alert('Preencha a descrição e um valor válido.'); return;
+    }
+    await addDoc(collection(db,'entradas'), nova);
+    // limpar ui
+    document.getElementById('clienteEntrada').value='';
+    document.getElementById('qtdEntrada').value='1';
+    document.getElementById('valorEntrada').value='';
+    document.getElementById('descricaoServico').value='';
+    document.getElementById('divServico').style.display='none';
+  }
+  window.adicionarEntrada=adicionarEntrada;
+
+  async function editarEntrada(idx){
+    const e=entradas[idx]; if(!e) return;
+    const cliente=prompt('Descrição:', e.cliente); if(cliente===null) return;
+    const tipo=prompt('Tipo:', e.tipo); if(tipo===null) return;
+    const qtd=prompt('Quantidade:', e.qtd); if(qtd===null||isNaN(parseInt(qtd))) return;
+    const forma=prompt('Forma (Pix/Cartão/Dinheiro):', e.forma); if(forma===null) return;
+    const valor=prompt('Valor (R$):', e.valor); if(valor===null||isNaN(parseNum(valor))) return;
+    const desc=prompt('Descrição do serviço (opcional):', e.descricao||''); if(desc===null) return;
+
+    const novo={...e,
+      cliente:cliente.trim(),
+      tipo, qtd:parseInt(qtd,10),
+      forma, valor:parseNum(valor),
+      descricao:desc
+    };
+    await updateDoc(doc(db,'entradas', entradasIDs[idx]), novo);
+  }
+  window.editarEntrada=editarEntrada;
+
+  async function excluirEntrada(idx){
+    if(!confirm('Excluir esta entrada?')) return;
+    await deleteDoc(doc(db,'entradas', entradasIDs[idx]));
+  }
+  window.excluirEntrada=excluirEntrada;
+
+  // ====== CRUD Saídas (Firestore) ======
+  async function adicionarSaida(){
+    const nova={
+      data: document.getElementById('dataSaida').value || hojeISO(),
+      descricao: (document.getElementById('descricaoSaida').value||'').trim(),
+      categoria: document.getElementById('categoriaSaida').value,
+      valor: parseNum(document.getElementById('valorSaida').value),
+      createdAt: serverTimestamp()
+    };
+    if(!nova.descricao || isNaN(nova.valor) || nova.valor<=0){
+      alert('Preencha descrição e valor válido.'); return;
+    }
+    await addDoc(collection(db,'saidas'), nova);
+    document.getElementById('descricaoSaida').value='';
+    document.getElementById('valorSaida').value='';
+  }
+  window.adicionarSaida=adicionarSaida;
+
+  async function editarSaida(idx){
+    const s=saidas[idx]; if(!s) return;
+    const desc=prompt('Descrição:', s.descricao); if(desc===null) return;
+    const cat=prompt('Categoria:', s.categoria); if(cat===null) return;
+    const val=prompt('Valor (R$):', s.valor); if(val===null||isNaN(parseNum(val))) return;
+
+    const novo={...s, descricao:desc.trim(), categoria:cat, valor:parseNum(val)};
+    await updateDoc(doc(db,'saidas', saidasIDs[idx]), novo);
+  }
+  window.editarSaida=editarSaida;
+
+  async function excluirSaida(idx){
+    if(!confirm('Excluir esta saída?')) return;
+    await deleteDoc(doc(db,'saidas', saidasIDs[idx]));
+  }
+  window.excluirSaida=excluirSaida;
+
+  // ====== Render ======
+  function render(){
+    const busca=document.getElementById('campoBusca').value||'';
+
+    const ent=entradas.filter(e=>filtroAtivo(e.data))
+                      .filter(e=>!busca || atendeBuscaEntrada(e,busca))
+                      .sort((a,b)=>String(a.data).localeCompare(String(b.data)));
+    const sai=saidas.filter(s=>filtroAtivo(s.data))
+                    .filter(s=>!busca || atendeBuscaSaida(s,busca))
+                    .sort((a,b)=>String(a.data).localeCompare(String(b.data)));
+
+    // Entradas
+    const te=document.querySelector('#tabelaEntradas tbody');
+    te.innerHTML=ent.map((e,i)=>`
+      <tr>
+        <td>${esc(e.data||'')}</td>
+        <td>${esc(e.cliente||'')}</td>
+        <td>${esc((e.tipo||'') + (e.descricao? ' - '+e.descricao:''))}</td>
+        <td>${e.qtd||1}</td>
+        <td>${esc(e.forma||'')}</td>
+        <td>${BRL(e.valor||0)}</td>
+        <td class="nowrap">
+          <button class="secondary" onclick="editarEntrada(${i})">✏️</button>
+          <button class="danger" onclick="excluirEntrada(${i})">🗑️</button>
+        </td>
+      </tr>`).join('');
+
+    // Saídas
+    const ts=document.querySelector('#tabelaSaidas tbody');
+    ts.innerHTML=sai.map((s,i)=>`
+      <tr>
+        <td>${esc(s.data||'')}</td>
+        <td>${esc(s.descricao||'')}</td>
+        <td>${esc(s.categoria||'')}</td>
+        <td>${BRL(s.valor||0)}</td>
+        <td class="nowrap">
+          <button class="secondary" onclick="editarSaida(${i})">✏️</button>
+          <button class="danger" onclick="excluirSaida(${i})">🗑️</button>
+        </td>
+      </tr>`).join('');
+
+    // Totais
+    const totE=ent.reduce((acc,e)=>acc+(parseFloat(e.valor)||0),0);
+    const totS=sai.reduce((acc,e)=>acc+(parseFloat(e.valor)||0),0);
+    document.getElementById('totalEntradas').textContent=BRL(totE);
+    document.getElementById('totalSaidas').textContent=BRL(totS);
+    const saldoEl=document.getElementById('saldo');
+    saldoEl.textContent=BRL(totE-totS);
+    saldoEl.style.color=(totE-totS)>=0? 'var(--ok)' : 'var(--bad)';
+
+    const pix=ent.filter(e=>e.forma==='Pix').reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
+    const cartao=ent.filter(e=>e.forma==='Cartão').reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
+    const dinheiro=ent.filter(e=>e.forma==='Dinheiro').reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
+    document.getElementById('totalPix').textContent=BRL(pix);
+    document.getElementById('totalCartao').textContent=BRL(cartao);
+    document.getElementById('totalDinheiro').textContent=BRL(dinheiro);
+  }
+  window.render=render;
+
+  function limparFiltros(){
+    document.getElementById('campoBusca').value='';
+    document.getElementById('filtroDia').value='';
+    document.getElementById('filtroMes').value='';
+    render();
+  }
+  window.limparFiltros=limparFiltros;
+
+  // ====== CSV / Backup / Import ======
+  function csvEsc(s){ if(s==null) return ''; s=String(s); return /[,\";\n]/.test(s)? `"${s.replace(/\"/g,'""')}"` : s; }
+
+  async function exportarCSV(){
+    // baixar todos do servidor para consistência do backup/export
+    const eSnap=await getDocs(collection(db,'entradas'));
+    const sSnap=await getDocs(collection(db,'saidas'));
+    const ent = eSnap.docs.map(d=>d.data());
+    const sai = sSnap.docs.map(d=>d.data());
+
+    let csv='Tipo,Data,Descrição,Detalhes,Valor\n';
+    ent.forEach(e=> csv+=`Entrada,${e.data||''},${csvEsc(e.cliente||'')},${csvEsc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))},${e.valor||0}\n`);
+    sai.forEach(s=> csv+=`Saída,${s.data||''},${csvEsc(s.descricao||'')},${csvEsc(s.categoria||'')},${s.valor||0}\n`);
+
+    const blob=new Blob(["\uFEFF"+csv],{type:'text/csv;charset=utf-8;'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='realcar_caixa.csv';
+    a.click(); URL.revokeObjectURL(a.href);
+  }
+  window.exportarCSV=exportarCSV;
+
+  async function exportarJSON(){
+    const eSnap=await getDocs(collection(db,'entradas'));
+    const sSnap=await getDocs(collection(db,'saidas'));
+    const data={ entradas:eSnap.docs.map(d=>({id:d.id,...d.data()})),
+                 saidas:sSnap.docs.map(d=>({id:d.id,...d.data()})) };
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='realcar_backup.json'; a.click();
+  }
+  window.exportarJSON=exportarJSON;
+
+  async function importarJSON(ev){
+    const file=ev.target.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload=async e=>{
+      try{
+        const d=JSON.parse(e.target.result);
+        if(Array.isArray(d.entradas)){
+          for(const it of d.entradas){
+            const payload={...it}; delete payload.id; delete payload.createdAt;
+            if(!payload.data) payload.data=hojeISO();
+            await addDoc(collection(db,'entradas'), {...payload, createdAt: serverTimestamp()});
+          }
+        }
+        if(Array.isArray(d.saidas)){
+          for(const it of d.saidas){
+            const payload={...it}; delete payload.id; delete payload.createdAt;
+            if(!payload.data) payload.data=hojeISO();
+            await addDoc(collection(db,'saidas'), {...payload, createdAt: serverTimestamp()});
+          }
+        }
+        alert('Backup importado para a nuvem! (Firestore)');
+      }catch(err){ console.error(err); alert('Arquivo inválido.'); }
+    };
+    r.readAsText(file);
+  }
+  window.importarJSON=importarJSON;
+
+  // ====== Relatórios ======
+  function imprimirRelatorio(){
+    const dia=document.getElementById('filtroDia').value;
+    const mes=document.getElementById('filtroMes').value;
+    const busca=document.getElementById('campoBusca').value||'';
+    const filtra = d => (dia? d===dia : (mes? (d||'').startsWith(mes) : true));
+
+    const ent=entradas.filter(e=>filtra(e.data)&&(!busca||atendeBuscaEntrada(e,busca)));
+    const sai=saidas.filter(s=>filtra(s.data)&&(!busca||atendeBuscaSaida(s,busca)));
+
+    const totE=ent.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
+    const totS=sai.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
+
+    const area=document.getElementById('printArea');
+    const titulo= dia? `Relatório do dia ${dia}` : (mes? `Relatório do mês ${mes}` : 'Relatório geral');
+    area.innerHTML=`
+      <div style="font-family:Arial;color:#000;width:720px;margin:auto">
+        <h2 style="margin:6px 0">📄 ${titulo} – Real Car Amortecedores</h2><hr/>
+        <h3>Entradas</h3>
+        <ul>${ent.map(e=>`<li>${e.data} – ${esc(e.cliente)} (${esc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))}, ${esc(e.forma||'')}) – ${BRL(e.valor)}</li>`).join('')}</ul>
+        <h3>Saídas</h3>
+        <ul>${sai.map(s=>`<li>${s.data} – ${esc(s.descricao)} (${esc(s.categoria)}) – ${BRL(s.valor)}</li>`).join('')}</ul>
+        <hr/><p><b>Total Entradas:</b> ${BRL(totE)}<br><b>Total Saídas:</b> ${BRL(totS)}<br><b>Saldo:</b> ${BRL(totE-totS)}</p>
+      </div>`;
+    setTimeout(()=>window.print(),100);
+  }
+  window.imprimirRelatorio=imprimirRelatorio;
+
+  function fecharMes(){
+    const mes=document.getElementById('filtroMes').value || new Date().toISOString().slice(0,7);
+    const ent=entradas.filter(e=>String(e.data||'').startsWith(mes));
+    const sai=saidas.filter(s=>String(s.data||'').startsWith(mes));
+    const totE=ent.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
+    const totS=sai.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
+    alert(`📅 Fechamento ${mes}\nEntradas: ${BRL(totE)}\nSaídas: ${BRL(totS)}\nSaldo: ${BRL(totE-totS)}`);
+  }
+  window.fecharMes=fecharMes;
+
+  // ====== Destruir tudo (protegido por senha) ======
+  async function apagarTudo(){
+    const senha = prompt("Digite a senha para confirmar:");
+    if(senha !== "12345"){ alert("❌ Senha incorreta!"); return; }
+    if(!confirm('Tem certeza que deseja apagar TODOS os dados?')) return;
+
+    // apaga entradas
+    const eSnap = await getDocs(collection(db,'entradas'));
+    for (const d of eSnap.docs) {
+      await deleteDoc(doc(db,'entradas', d.id));
+    }
+    // apaga saídas
+    const sSnap = await getDocs(collection(db,'saidas'));
+    for (const d of sSnap.docs) {
+      await deleteDoc(doc(db,'saidas', d.id));
+    }
+    alert("✅ Todos os dados foram apagados do Firestore.");
+  }
+  window.apagarTudo=apagarTudo;
 </script>
+
+<!--Fim-->
+</body>
+</html>
