@@ -36,6 +36,48 @@
   .pill b{display:block;color:#bbb;margin-bottom:4px}
   .ok{color:var(--ok)} .bad{color:var(--bad)} .neutral{color:var(--warn)}
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center}
+
+  @media (max-width: 768px) {
+    .form-grid {
+      flex-direction: column;
+    }
+    table, thead, tbody, th, td, tr {
+      display: block;
+      width: 100%;
+    }
+    thead tr {
+      display: none;
+    }
+    tr {
+      margin-bottom: 15px;
+      border-bottom: 2px solid var(--borda);
+    }
+    td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+    }
+    td::before {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      white-space: nowrap;
+      color: #ccc;
+      font-weight: bold;
+    }
+    #tabelaEntradas td:nth-child(1)::before { content: "Data"; }
+    #tabelaEntradas td:nth-child(2)::before { content: "Descrição"; }
+    #tabelaEntradas td:nth-child(3)::before { content: "Tipo"; }
+    #tabelaEntradas td:nth-child(4)::before { content: "Qtd"; }
+    #tabelaEntradas td:nth-child(5)::before { content: "Forma"; }
+    #tabelaEntradas td:nth-child(6)::before { content: "Valor"; }
+    #tabelaEntradas td:nth-child(7)::before { content: "Ações"; }
+    #tabelaSaidas td:nth-child(1)::before { content: "Data"; }
+    #tabelaSaidas td:nth-child(2)::before { content: "Descrição"; }
+    #tabelaSaidas td:nth-child(3)::before { content: "Categoria"; }
+    #tabelaSaidas td:nth-child(4)::before { content: "Valor"; }
+    #tabelaSaidas td:nth-child(5)::before { content: "Ações"; }
+  }
 </style>
 </head>
 <body>
