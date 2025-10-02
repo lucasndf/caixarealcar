@@ -479,7 +479,6 @@
     document.getElementById('totalDinheiro').textContent=BRL(dinheiro);
   }
   window.render=render;
-  alert("✅ Entrada adicionada com sucesso!");
 
   function limparFiltros(){
     document.getElementById('campoBusca').value='';
@@ -510,7 +509,6 @@
     a.click(); URL.revokeObjectURL(a.href);
   }
   window.exportarCSV=exportarCSV;
-  alert("✅ Saída adicionada com sucesso!");
 
   async function exportarJSON(){
     const eSnap=await getDocs(collection(db,'entradas'));
