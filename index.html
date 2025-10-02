@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -334,31 +335,30 @@
 
   // ====== CRUD Entradas (Firestore) ======
   async function adicionarEntrada(){
-    const tipoEl=document.getElementById('tipoEntrada');
-    const nova={
+    const nova = {
       data: document.getElementById('dataEntrada').value || hojeISO(),
-      cliente: (document.getElementById('clienteEntrada').value||'').trim(),
-      tipo: tipoEl.value,
-      qtd: parseInt(document.getElementById('qtdEntrada').value||'1',10),
+      cliente: (document.getElementById('clienteEntrada').value || '').trim().toUpperCase(),
+      tipo: document.getElementById('tipoEntrada').value,
+      qtd: parseInt(document.getElementById('qtdEntrada').value || '1', 10),
       forma: document.getElementById('formaEntrada').value,
       valor: parseNum(document.getElementById('valorEntrada').value),
-      descricao: (['Serviço','Dianteiro + Traseiro + Serviço'].includes(tipoEl.value)
-                 ? (document.getElementById('descricaoServico').value||'').trim()
-                 : ''),
+      descricao: ['Serviço', 'Dianteiro + Traseiro + Serviço'].includes(document.getElementById('tipoEntrada').value)
+        ? (document.getElementById('descricaoServico').value || '').trim().toUpperCase()
+        : '',
       createdAt: serverTimestamp()
     };
-    if(!nova.cliente || isNaN(nova.valor) || nova.valor<=0){
+    if(!nova.cliente || isNaN(nova.valor) || nova.valor <= 0){
       alert('Preencha a descrição e um valor válido.'); return;
     }
     await addDoc(collection(db,'entradas'), nova);
-    // limpar ui
     document.getElementById('clienteEntrada').value='';
     document.getElementById('qtdEntrada').value='1';
     document.getElementById('valorEntrada').value='';
     document.getElementById('descricaoServico').value='';
     document.getElementById('divServico').style.display='none';
+    alert("✅ Entrada adicionada com sucesso!");
   }
-  window.adicionarEntrada=adicionarEntrada;
+  window.adicionarEntrada = adicionarEntrada;
 
   async function editarEntrada(idx){
     const e=entradas[idx]; if(!e) return;
@@ -387,21 +387,22 @@
 
   // ====== CRUD Saídas (Firestore) ======
   async function adicionarSaida(){
-    const nova={
+    const nova = {
       data: document.getElementById('dataSaida').value || hojeISO(),
-      descricao: (document.getElementById('descricaoSaida').value||'').trim(),
+      descricao: (document.getElementById('descricaoSaida').value || '').trim().toUpperCase(),
       categoria: document.getElementById('categoriaSaida').value,
       valor: parseNum(document.getElementById('valorSaida').value),
       createdAt: serverTimestamp()
     };
-    if(!nova.descricao || isNaN(nova.valor) || nova.valor<=0){
+    if(!nova.descricao || isNaN(nova.valor) || nova.valor <= 0){
       alert('Preencha descrição e valor válido.'); return;
     }
     await addDoc(collection(db,'saidas'), nova);
     document.getElementById('descricaoSaida').value='';
     document.getElementById('valorSaida').value='';
+    alert("✅ Saída adicionada com sucesso!");
   }
-  window.adicionarSaida=adicionarSaida;
+  window.adicionarSaida = adicionarSaida;
 
   async function editarSaida(idx){
     const s=saidas[idx]; if(!s) return;
@@ -478,6 +479,7 @@
     document.getElementById('totalDinheiro').textContent=BRL(dinheiro);
   }
   window.render=render;
+  alert("✅ Entrada adicionada com sucesso!");
 
   function limparFiltros(){
     document.getElementById('campoBusca').value='';
@@ -508,6 +510,7 @@
     a.click(); URL.revokeObjectURL(a.href);
   }
   window.exportarCSV=exportarCSV;
+  alert("✅ Saída adicionada com sucesso!");
 
   async function exportarJSON(){
     const eSnap=await getDocs(collection(db,'entradas'));
