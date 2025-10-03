@@ -45,7 +45,7 @@
   .tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#3a3a3a;font-size:12px;margin-left:6px}
   .nowrap{white-space:nowrap}
 
-  /* Pagamentos flex */
+  /* Pagamento combinado */
   .pay-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
   .pay-row .pay-item{display:flex;gap:6px;align-items:center;border:1px solid var(--borda);border-radius:8px;padding:6px 8px;background:#1a1a1a}
   .pay-row .pay-item input[type="number"]{width:120px}
@@ -145,32 +145,38 @@
       </div>
 
       <div>
-        <label>Valor Total (R$)</label>
+        <label>Forma de Pagamento</label>
+        <select id="formaPagamento">
+          <option>Pix</option>
+          <option>Dinheiro</option>
+          <option>Cartão</option>
+          <option>Combinado</option>
+        </select>
+      </div>
+
+      <!-- Valor único (quando NÃO é Combinado) -->
+      <div id="boxValorUnico">
+        <label>Valor (R$)</label>
         <input id="valorEntrada" type="number" step="0.01" placeholder="0,00">
       </div>
 
-      <div style="flex-basis:100%"></div>
-
-      <div style="flex-basis:100%">
-        <label>Pagamento (pode combinar)</label>
+      <!-- Pagamento Combinado -->
+      <div id="boxCombinado" style="display:none;flex-basis:100%">
+        <label>Pagamentos (somar até o total desejado)</label>
         <div class="pay-row">
           <div class="pay-item">
-            <input id="payPixChk" type="checkbox" checked>
             <span>Pix</span>
             <input id="payPixVal" type="number" step="0.01" placeholder="0,00">
           </div>
           <div class="pay-item">
-            <input id="payCartaoChk" type="checkbox">
-            <span>Cartão</span>
-            <input id="payCartaoVal" type="number" step="0.01" placeholder="0,00">
-          </div>
-          <div class="pay-item">
-            <input id="payDinChk" type="checkbox">
             <span>Dinheiro</span>
             <input id="payDinVal" type="number" step="0.01" placeholder="0,00">
           </div>
+          <div class="pay-item">
+            <span>Cartão</span>
+            <input id="payCartaoVal" type="number" step="0.01" placeholder="0,00">
+          </div>
         </div>
-        <div class="hint">A soma dos valores selecionados deve bater com o <b>Valor Total</b>.</div>
       </div>
     </div>
 
@@ -263,6 +269,7 @@
     <div class="form-grid">
       <div><label>Data</label><input id="m_data" type="date"></div>
       <div><label>Descrição</label><input id="m_cliente" type="text"></div>
+
       <div>
         <label>Tipo</label>
         <select id="m_tipo">
@@ -276,10 +283,12 @@
           <option>Hastes</option>
         </select>
       </div>
+
       <div id="m_divServico" style="display:none">
         <label>Descrição do Serviço</label>
         <input id="m_descServico" type="text"/>
       </div>
+
       <div>
         <label>Instalação</label>
         <select id="m_instalacao">
@@ -287,26 +296,40 @@
           <option>Amortecedor Fora</option>
         </select>
       </div>
-      <div><label>Qtd</label><input id="m_qtd" type="number" min="1"></div>
-      <div><label>Valor Total (R$)</label><input id="m_valor" type="number" step="0.01"></div>
 
-      <div style="flex-basis:100%">
-        <label>Pagamento</label>
+      <div><label>Qtd</label><input id="m_qtd" type="number" min="1"></div>
+
+      <div>
+        <label>Forma de Pagamento</label>
+        <select id="m_formaPagamento">
+          <option>Pix</option>
+          <option>Dinheiro</option>
+          <option>Cartão</option>
+          <option>Combinado</option>
+        </select>
+      </div>
+
+      <!-- Valor único no modal -->
+      <div id="m_boxValorUnico">
+        <label>Valor (R$)</label>
+        <input id="m_valor" type="number" step="0.01">
+      </div>
+
+      <!-- Combinado no modal -->
+      <div id="m_boxCombinado" style="display:none;flex-basis:100%">
+        <label>Pagamentos</label>
         <div class="pay-row">
           <div class="pay-item">
-            <input id="m_payPixChk" type="checkbox">
             <span>Pix</span>
             <input id="m_payPixVal" type="number" step="0.01" placeholder="0,00">
           </div>
           <div class="pay-item">
-            <input id="m_payCartaoChk" type="checkbox">
-            <span>Cartão</span>
-            <input id="m_payCartaoVal" type="number" step="0.01" placeholder="0,00">
-          </div>
-          <div class="pay-item">
-            <input id="m_payDinChk" type="checkbox">
             <span>Dinheiro</span>
             <input id="m_payDinVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+          <div class="pay-item">
+            <span>Cartão</span>
+            <input id="m_payCartaoVal" type="number" step="0.01" placeholder="0,00">
           </div>
         </div>
       </div>
@@ -317,7 +340,6 @@
     </div>
   </div>
 </div>
-
 <!-- ========================== APP SCRIPT (com Firebase) ========================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -337,6 +359,7 @@
 
   const appFB = initializeApp(firebaseConfig);
   const db = getFirestore(appFB);
+
   // ====== Login ======
   const usuarioPadrao="admin", senhaPadrao="12345";
   function fazerLogin(){
@@ -368,13 +391,12 @@
   // ====== Estado ======
   let entradas=[], entradasIDs=[];
   let saidas=[], saidasIDs=[];
-  let editIndex = -1; // índice que está sendo editado (entradas)
-
+  let editIndex = -1; // índice REAL da coleção (não do filtro)
   // ====== Utils ======
   const hojeISO = ()=> new Date().toLocaleDateString('fr-CA'); // yyyy-mm-dd
   const BRL = v => (parseFloat(v||0)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const esc = s => String(s??"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
-  const parseNum = v => parseFloat(String(v||0).replace(',','.'))||0;
+  const parseNum = v => parseFloat(String(v??0).replace(',','.'))||0;
 
   function somaPag(p){ return (parseNum(p?.pix)+parseNum(p?.cartao)+parseNum(p?.dinheiro)); }
   function fmtPag(p){
@@ -384,25 +406,29 @@
     if(parseNum(p?.dinheiro)>0) parts.push(`Dinheiro ${BRL(p.dinheiro)}`);
     return parts.join(" + ") || "-";
   }
-
   // ====== Init ======
   function init(){
-    // Alternar campo de serviço em "adicionar"
+    // alternar campo de serviço (cadastro)
     document.getElementById("tipoEntrada").addEventListener("change", () => {
-      const tipo = document.getElementById("tipoEntrada").value;
+      const t = document.getElementById("tipoEntrada").value;
       document.getElementById("divServico").style.display =
-        (tipo === "Serviço" || tipo === "Dianteiro + Traseiro + Serviço") ? "block" : "none";
+        (t === "Serviço" || t === "Dianteiro + Traseiro + Serviço") ? "block" : "none";
     });
 
-    // Default datas
+    // alternar UI de pagamento (cadastro)
+    document.getElementById("formaPagamento").addEventListener("change", () => {
+      const f = document.getElementById("formaPagamento").value;
+      document.getElementById("boxCombinado").style.display = (f==="Combinado") ? "block":"none";
+      document.getElementById("boxValorUnico").style.display = (f==="Combinado") ? "none":"block";
+    });
+
+    // default: datas + filtro do dia
     document.getElementById('dataEntrada').value = hojeISO();
     document.getElementById('dataSaida').value   = hojeISO();
-
-    // ATIVAR FILTRO DO DIA ATUAL POR PADRÃO
     const fd = document.getElementById('filtroDia');
     fd.value = hojeISO();
 
-    // Stream realtime
+    // realtime
     onSnapshot(query(collection(db,'entradas'), orderBy('data','asc')), snap=>{
       entradas = snap.docs.map(d=>d.data());
       entradasIDs = snap.docs.map(d=>d.id);
@@ -414,89 +440,116 @@
       render();
     });
   }
+
   // ====== CRUD Entradas ======
   async function adicionarEntrada(){
-    const total = parseNum(document.getElementById('valorEntrada').value);
-    const p = {
-      pix: document.getElementById('payPixChk').checked ? parseNum(document.getElementById('payPixVal').value) : 0,
-      cartao: document.getElementById('payCartaoChk').checked ? parseNum(document.getElementById('payCartaoVal').value) : 0,
-      dinheiro: document.getElementById('payDinChk').checked ? parseNum(document.getElementById('payDinVal').value) : 0,
-    };
-    if (Math.abs(somaPag(p) - total) > 0.009){
-      alert('A soma dos pagamentos (Pix/Cartão/Dinheiro) precisa bater com o Valor Total.');
-      return;
+    const tipoSel = document.getElementById('tipoEntrada').value;
+    const formaSel = document.getElementById('formaPagamento').value;
+
+    let pagamento = {pix:0, cartao:0, dinheiro:0};
+    let total = 0;
+
+    if (formaSel === 'Combinado'){
+      const pix = parseNum(document.getElementById('payPixVal').value);
+      const din = parseNum(document.getElementById('payDinVal').value);
+      const car = parseNum(document.getElementById('payCartaoVal').value);
+      pagamento = {pix, dinheiro:din, cartao:car};
+      total = somaPag(pagamento);
+      if (total <= 0){ alert('Informe pelo menos um valor no combinado.'); return; }
+    } else {
+      total = parseNum(document.getElementById('valorEntrada').value);
+      if (total<=0){ alert('Informe um valor válido.'); return; }
+      if (formaSel==='Pix') pagamento.pix = total;
+      if (formaSel==='Dinheiro') pagamento.dinheiro = total;
+      if (formaSel==='Cartão') pagamento.cartao = total;
     }
 
-    const tipoSel = document.getElementById('tipoEntrada').value;
     const nova = {
       data: document.getElementById('dataEntrada').value || hojeISO(),
       cliente: (document.getElementById('clienteEntrada').value || '').trim().toUpperCase(),
       tipo: tipoSel,
       qtd: parseInt(document.getElementById('qtdEntrada').value || '1', 10),
       instalacao: document.getElementById('instalacaoEntrada').value,
-      pagamento: p,
+      pagamento,
       valor: total,
-      forma: fmtPag(p), // para busca legada
+      forma: (formaSel==='Combinado') ? fmtPag(pagamento) : formaSel, // útil para busca legada
       descricao: (tipoSel === 'Serviço' || tipoSel === 'Dianteiro + Traseiro + Serviço')
         ? (document.getElementById('descricaoServico').value || '').trim().toUpperCase()
         : '',
       createdAt: serverTimestamp()
     };
 
-    if(!nova.cliente || nova.valor <= 0){
-      alert('Preencha a descrição e um valor válido.'); return;
-    }
+    if(!nova.cliente){ alert('Preencha a descrição do cliente.'); return; }
 
     await addDoc(collection(db,'entradas'), nova);
 
-    // limpar ui
+    // limpar ui (cadastro)
     document.getElementById('clienteEntrada').value='';
     document.getElementById('qtdEntrada').value='1';
     document.getElementById('valorEntrada').value='';
     document.getElementById('descricaoServico').value='';
     document.getElementById('divServico').style.display='none';
-    document.getElementById('payPixChk').checked=true; document.getElementById('payPixVal').value='';
-    document.getElementById('payCartaoChk').checked=false; document.getElementById('payCartaoVal').value='';
-    document.getElementById('payDinChk').checked=false; document.getElementById('payDinVal').value='';
-
+    document.getElementById('payPixVal').value='';
+    document.getElementById('payCartaoVal').value='';
+    document.getElementById('payDinVal').value='';
     alert("✅ Entrada adicionada com sucesso!");
   }
   window.adicionarEntrada = adicionarEntrada;
-
   // ====== Modal Editar Entrada ======
-  function abrirModalEntrada(i){
-    const e=entradas[i]; if(!e) return;
-    editIndex = i;
-    const bd = document.getElementById('modalBackdrop');
+  function abrirModalEntrada(realIndex){
+    const e=entradas[realIndex]; if(!e) return;
+    editIndex = realIndex;
+
+    // preencher básico
     document.getElementById('m_data').value = e.data || hojeISO();
     document.getElementById('m_cliente').value = e.cliente || '';
     document.getElementById('m_tipo').value = e.tipo || 'Dianteiro';
     document.getElementById('m_instalacao').value = e.instalacao || 'Instalado na Oficina';
     document.getElementById('m_qtd').value = e.qtd || 1;
-    document.getElementById('m_valor').value = e.valor || 0;
 
-    // Serviço
+    // serviço
     const precisaServico = (e.tipo === 'Serviço' || e.tipo === 'Dianteiro + Traseiro + Serviço');
     document.getElementById('m_divServico').style.display = precisaServico ? 'block' : 'none';
     document.getElementById('m_descServico').value = e.descricao || '';
 
-    // pagamentos
-    const p = e.pagamento || {};
-    const pix = parseNum(p.pix), cartao = parseNum(p.cartao), dinheiro = parseNum(p.dinheiro);
-    document.getElementById('m_payPixChk').checked = pix>0; document.getElementById('m_payPixVal').value = pix||'';
-    document.getElementById('m_payCartaoChk').checked = cartao>0; document.getElementById('m_payCartaoVal').value = cartao||'';
-    document.getElementById('m_payDinChk').checked = dinheiro>0; document.getElementById('m_payDinVal').value = dinheiro||'';
+    // decidir forma
+    const p = e.pagamento || {pix:0, cartao:0, dinheiro:0};
+    const temCombo = [p.pix, p.cartao, p.dinheiro].filter(v=>parseNum(v)>0).length > 1;
+    document.getElementById('m_formaPagamento').value = temCombo
+      ? 'Combinado'
+      : (parseNum(p.pix)>0 ? 'Pix' : parseNum(p.cartao)>0 ? 'Cartão' : 'Dinheiro');
 
-    bd.style.display='flex';
+    // alternar áreas conforme a forma
+    alternarModalPagamentoUI();
 
-    // alternar servico se tipo mudar
+    if (document.getElementById('m_formaPagamento').value==='Combinado'){
+      document.getElementById('m_payPixVal').value = parseNum(p.pix)||'';
+      document.getElementById('m_payDinVal').value = parseNum(p.dinheiro)||'';
+      document.getElementById('m_payCartaoVal').value = parseNum(p.cartao)||'';
+      document.getElementById('m_valor').value = ''; // não usado no combinado
+    } else {
+      document.getElementById('m_valor').value = parseNum(e.valor)||0;
+      document.getElementById('m_payPixVal').value = '';
+      document.getElementById('m_payDinVal').value = '';
+      document.getElementById('m_payCartaoVal').value = '';
+    }
+
+    document.getElementById('modalBackdrop').style.display='flex';
+
     document.getElementById('m_tipo').onchange = () => {
       const t = document.getElementById('m_tipo').value;
       document.getElementById('m_divServico').style.display =
         (t==='Serviço' || t==='Dianteiro + Traseiro + Serviço') ? 'block':'none';
     };
+    document.getElementById('m_formaPagamento').onchange = alternarModalPagamentoUI;
   }
   window.abrirModalEntrada = abrirModalEntrada;
+
+  function alternarModalPagamentoUI(){
+    const f = document.getElementById('m_formaPagamento').value;
+    document.getElementById('m_boxCombinado').style.display = (f==='Combinado') ? 'block':'none';
+    document.getElementById('m_boxValorUnico').style.display = (f==='Combinado') ? 'none':'block';
+  }
 
   function fecharModal(){
     document.getElementById('modalBackdrop').style.display='none';
@@ -509,14 +562,23 @@
     const e = entradas[editIndex];
     const id = entradasIDs[editIndex];
 
-    const total = parseNum(document.getElementById('m_valor').value);
-    const p = {
-      pix: document.getElementById('m_payPixChk').checked ? parseNum(document.getElementById('m_payPixVal').value) : 0,
-      cartao: document.getElementById('m_payCartaoChk').checked ? parseNum(document.getElementById('m_payCartaoVal').value) : 0,
-      dinheiro: document.getElementById('m_payDinChk').checked ? parseNum(document.getElementById('m_payDinVal').value) : 0,
-    };
-    if (Math.abs(somaPag(p) - total) > 0.009){
-      alert('A soma dos pagamentos (Pix/Cartão/Dinheiro) precisa bater com o Valor Total.'); return;
+    const formaSel = document.getElementById('m_formaPagamento').value;
+    let pagamento = {pix:0, cartao:0, dinheiro:0};
+    let total = 0;
+
+    if (formaSel==='Combinado'){
+      const pix = parseNum(document.getElementById('m_payPixVal').value);
+      const din = parseNum(document.getElementById('m_payDinVal').value);
+      const car = parseNum(document.getElementById('m_payCartaoVal').value);
+      pagamento = {pix, dinheiro:din, cartao:car};
+      total = somaPag(pagamento);
+      if (total<=0){ alert('Informe pelo menos um valor no combinado.'); return; }
+    } else {
+      total = parseNum(document.getElementById('m_valor').value);
+      if (total<=0){ alert('Informe um valor válido.'); return; }
+      if (formaSel==='Pix') pagamento.pix = total;
+      if (formaSel==='Dinheiro') pagamento.dinheiro = total;
+      if (formaSel==='Cartão') pagamento.cartao = total;
     }
 
     const novo = {
@@ -527,8 +589,8 @@
       instalacao: document.getElementById('m_instalacao').value,
       qtd: parseInt(document.getElementById('m_qtd').value||'1',10),
       valor: total,
-      pagamento: p,
-      forma: fmtPag(p),
+      pagamento,
+      forma: (formaSel==='Combinado') ? fmtPag(pagamento) : formaSel,
     };
 
     const t = novo.tipo;
@@ -543,11 +605,12 @@
   }
   window.salvarEdicaoEntrada = salvarEdicaoEntrada;
 
-  async function excluirEntrada(idx){
+  async function excluirEntrada(realIndex){
     if(!confirm('Excluir esta entrada?')) return;
-    await deleteDoc(doc(db,'entradas', entradasIDs[idx]));
+    await deleteDoc(doc(db,'entradas', entradasIDs[realIndex]));
   }
   window.excluirEntrada=excluirEntrada;
+
   // ====== CRUD Saídas ======
   async function adicionarSaida(){
     const nova = {
@@ -610,56 +673,60 @@
   function render(){
     const busca=document.getElementById('campoBusca').value||'';
 
-    const ent=entradas.filter(e=>filtroAtivo(e.data))
-                      .filter(e=>!busca || atendeBuscaEntrada(e,busca))
-                      .sort((a,b)=>String(a.data).localeCompare(String(b.data)));
-    const sai=saidas.filter(s=>filtroAtivo(s.data))
-                    .filter(s=>!busca || atendeBuscaSaida(s,busca))
-                    .sort((a,b)=>String(a.data).localeCompare(String(b.data)));
+    // IMPORTANTe: ligar item renderizado ao índice REAL
+    const ent = entradas.map((e,idx)=>({e, idx}))
+      .filter(o=>filtroAtivo(o.e.data))
+      .filter(o=>!busca || atendeBuscaEntrada(o.e,busca))
+      .sort((a,b)=>String(a.e.data).localeCompare(String(b.e.data)));
+
+    const sai = saidas.map((s,idx)=>({s, idx}))
+      .filter(o=>filtroAtivo(o.s.data))
+      .filter(o=>!busca || atendeBuscaSaida(o.s,busca))
+      .sort((a,b)=>String(a.s.data).localeCompare(String(b.s.data)));
 
     // Entradas
     const te=document.querySelector('#tabelaEntradas tbody');
-    te.innerHTML=ent.map((e,i)=>`
+    te.innerHTML=ent.map(o=>`
       <tr>
-        <td>${esc(e.data||'')}</td>
-        <td>${esc(e.cliente||'')}</td>
-        <td>${esc((e.tipo||'') + (e.descricao? ' - '+e.descricao:''))}</td>
-        <td>${e.qtd||1}</td>
-        <td>${esc(e.instalacao||'-')}</td>
-        <td>${esc(fmtPag(e.pagamento||{}))}</td>
-        <td>${BRL(e.valor||0)}</td>
+        <td>${esc(o.e.data||'')}</td>
+        <td>${esc(o.e.cliente||'')}</td>
+        <td>${esc((o.e.tipo||'') + (o.e.descricao? ' - '+o.e.descricao:''))}</td>
+        <td>${o.e.qtd||1}</td>
+        <td>${esc(o.e.instalacao||'-')}</td>
+        <td>${esc(o.e.forma || fmtPag(o.e.pagamento||{}))}</td>
+        <td>${BRL(o.e.valor||0)}</td>
         <td class="nowrap">
-          <button class="secondary" onclick="abrirModalEntrada(${i})">✏️</button>
-          <button class="danger" onclick="excluirEntrada(${i})">🗑️</button>
+          <button class="secondary" onclick="abrirModalEntrada(${o.idx})">✏️</button>
+          <button class="danger" onclick="excluirEntrada(${o.idx})">🗑️</button>
         </td>
       </tr>`).join('');
 
     // Saídas
     const ts=document.querySelector('#tabelaSaidas tbody');
-    ts.innerHTML=sai.map((s,i)=>`
+    ts.innerHTML=sai.map(o=>`
       <tr>
-        <td>${esc(s.data||'')}</td>
-        <td>${esc(s.descricao||'')}</td>
-        <td>${esc(s.categoria||'')}</td>
-        <td>${BRL(s.valor||0)}</td>
+        <td>${esc(o.s.data||'')}</td>
+        <td>${esc(o.s.descricao||'')}</td>
+        <td>${esc(o.s.categoria||'')}</td>
+        <td>${BRL(o.s.valor||0)}</td>
         <td class="nowrap">
-          <button class="secondary" onclick="editarSaida(${i})">✏️</button>
-          <button class="danger" onclick="excluirSaida(${i})">🗑️</button>
+          <button class="secondary" onclick="editarSaida(${o.idx})">✏️</button>
+          <button class="danger" onclick="excluirSaida(${o.idx})">🗑️</button>
         </td>
       </tr>`).join('');
 
     // Totais
-    const totE=ent.reduce((acc,e)=>acc+(parseNum(e.valor)||0),0);
-    const totS=sai.reduce((acc,e)=>acc+(parseNum(e.valor)||0),0);
+    const totE=ent.reduce((acc,o)=>acc+(parseNum(o.e.valor)||0),0);
+    const totS=sai.reduce((acc,o)=>acc+(parseNum(o.s.valor)||0),0);
     document.getElementById('totalEntradas').textContent=BRL(totE);
     document.getElementById('totalSaidas').textContent=BRL(totS);
     const saldoEl=document.getElementById('saldo');
     saldoEl.textContent=BRL(totE-totS);
     saldoEl.style.color=(totE-totS)>=0? 'var(--ok)' : 'var(--bad)';
 
-    const pix=ent.reduce((s,e)=>s+parseNum(e?.pagamento?.pix),0);
-    const cartao=ent.reduce((s,e)=>s+parseNum(e?.pagamento?.cartao),0);
-    const dinheiro=ent.reduce((s,e)=>s+parseNum(e?.pagamento?.dinheiro),0);
+    const pix=ent.reduce((s,o)=>s+parseNum(o.e?.pagamento?.pix),0);
+    const cartao=ent.reduce((s,o)=>s+parseNum(o.e?.pagamento?.cartao),0);
+    const dinheiro=ent.reduce((s,o)=>s+parseNum(o.e?.pagamento?.dinheiro),0);
     document.getElementById('totalPix').textContent=BRL(pix);
     document.getElementById('totalCartao').textContent=BRL(cartao);
     document.getElementById('totalDinheiro').textContent=BRL(dinheiro);
@@ -684,7 +751,7 @@
 
     let csv='Tipo,Data,Descrição,Detalhes,Instalação,Pagamento,Valor\n';
     ent.forEach(e=>{
-      csv+=`Entrada,${e.data||''},${csvEsc(e.cliente||'')},${csvEsc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))},${csvEsc(e.instalacao||'')},${csvEsc(fmtPag(e.pagamento||{}))},${e.valor||0}\n`;
+      csv+=`Entrada,${e.data||''},${csvEsc(e.cliente||'')},${csvEsc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))},${csvEsc(e.instalacao||'')},${csvEsc(e.forma || fmtPag(e.pagamento||{}))},${e.valor||0}\n`;
     });
     sai.forEach(s=>{
       csv+=`Saída,${s.data||''},${csvEsc(s.descricao||'')},${csvEsc(s.categoria||'')},,,${s.valor||0}\n`;
@@ -754,7 +821,7 @@
       <div style="font-family:Arial;color:#000;width:720px;margin:auto">
         <h2 style="margin:6px 0">📄 ${titulo} – Real Car Amortecedores</h2><hr/>
         <h3>Entradas</h3>
-        <ul>${ent.map(e=>`<li>${e.data} – ${esc(e.cliente)} (${esc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))}, ${esc(e.instalacao||'')}, ${esc(fmtPag(e.pagamento||{}))}) – ${BRL(e.valor)}</li>`).join('')}</ul>
+        <ul>${ent.map(e=>`<li>${e.data} – ${esc(e.cliente)} (${esc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))}, ${esc(e.instalacao||'')}, ${esc(e.forma || fmtPag(e.pagamento||{}))}) – ${BRL(e.valor)}</li>`).join('')}</ul>
         <h3>Saídas</h3>
         <ul>${sai.map(s=>`<li>${s.data} – ${esc(s.descricao)} (${esc(s.categoria)}) – ${BRL(s.valor)}</li>`).join('')}</ul>
         <hr/><p><b>Total Entradas:</b> ${BRL(totE)}<br><b>Total Saídas:</b> ${BRL(totS)}<br><b>Saldo:</b> ${BRL(totE-totS)}</p>
