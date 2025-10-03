@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Real Car - Sistema de Caixa (Login Visual) </title>
+<title>Real Car - Sistema de Caixa (Login Visual)</title>
 <style>
   :root{
     --fundo:#1e1e1e; --painel:#2a2a2a; --borda:#444; --campo:#333;
@@ -28,7 +27,7 @@
   label{display:block;margin-top:10px;font-weight:600}
   input,select{width:100%;padding:10px;border-radius:6px;border:1px solid #555;background:var(--campo);color:#fff;font-size:15px}
   .form-grid{display:flex;gap:14px;flex-wrap:wrap}
-  .form-grid>div{flex:1;min-width:200px}
+  .form-grid>div{flex:1;min-width:220px}
   button{padding:10px 14px;border:none;border-radius:6px;background:var(--vermelho);color:#fff;font-weight:700;cursor:pointer}
   .secondary{background:#444}
   .danger{background:#7a0b0b}
@@ -43,8 +42,21 @@
   .pill b{display:block;color:#bbb;margin-bottom:4px}
   .ok{color:var(--ok)} .bad{color:var(--bad)} .neutral{color:var(--warn)}
   .hint{color:#bdbdbd;font-size:12px;margin-top:6px;line-height:1.35}
+  .tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#3a3a3a;font-size:12px;margin-left:6px}
+  .nowrap{white-space:nowrap}
 
-  /* responsivo: tabela -> cards */
+  /* Pagamentos flex */
+  .pay-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .pay-row .pay-item{display:flex;gap:6px;align-items:center;border:1px solid var(--borda);border-radius:8px;padding:6px 8px;background:#1a1a1a}
+  .pay-row .pay-item input[type="number"]{width:120px}
+
+  /* Modal */
+  .modal-backdrop{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:9999}
+  .modal{background:var(--painel);border:1px solid var(--borda);border-radius:12px;max-width:720px;width:95%;padding:16px}
+  .modal h3{margin:0 0 12px;color:var(--vermelho)}
+  .modal .actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+
+  /* mobile: tabela em cards */
   @media (max-width: 768px) {
     .form-grid { flex-direction: column; }
     table, thead, tbody, th, td, tr { display: block; width: 100%; }
@@ -56,20 +68,16 @@
     #tabelaEntradas td:nth-child(2)::before { content: "Descrição"; }
     #tabelaEntradas td:nth-child(3)::before { content: "Tipo"; }
     #tabelaEntradas td:nth-child(4)::before { content: "Qtd"; }
-    #tabelaEntradas td:nth-child(5)::before { content: "Forma"; }
-    #tabelaEntradas td:nth-child(6)::before { content: "Valor"; }
-    #tabelaEntradas td:nth-child(7)::before { content: "Ações"; }
+    #tabelaEntradas td:nth-child(5)::before { content: "Instalação"; }
+    #tabelaEntradas td:nth-child(6)::before { content: "Pagamento"; }
+    #tabelaEntradas td:nth-child(7)::before { content: "Valor"; }
+    #tabelaEntradas td:nth-child(8)::before { content: "Ações"; }
     #tabelaSaidas td:nth-child(1)::before { content: "Data"; }
     #tabelaSaidas td:nth-child(2)::before { content: "Descrição"; }
     #tabelaSaidas td:nth-child(3)::before { content: "Categoria"; }
     #tabelaSaidas td:nth-child(4)::before { content: "Valor"; }
     #tabelaSaidas td:nth-child(5)::before { content: "Ações"; }
   }
-
-  /* pequenos detalhes */
-  .tag{display:inline-block;padding:3px 8px;border-radius:999px;background:#3a3a3a;font-size:12px;margin-left:6px}
-  .right{float:right}
-  .nowrap{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -78,7 +86,7 @@
 <div id="loginTela" class="login-container">
   <div class="login-box">
     <h1>Real Car</h1>
-    <p>Sistema de Caixa </p>
+    <p>Sistema de Caixa</p>
     <input id="usuario" type="text" placeholder="Usuário" autocomplete="off">
     <input id="senha" type="password" placeholder="Senha">
     <button onclick="fazerLogin()">Entrar</button>
@@ -91,22 +99,19 @@
 <div id="app" class="container" aria-hidden="true">
   <!-- Entradas -->
   <div class="bloco" id="blocoEntradas">
-    <h2>
-      Entradas
-      <span class="tag">Realtime</span>
-    </h2>
+    <h2>Entradas <span class="tag">Realtime</span></h2>
     <div class="form-grid">
       <div>
         <label>Data</label>
-        <input id="dataEntrada" type="date" />
+        <input id="dataEntrada" type="date"/>
       </div>
+
       <div>
         <label>Descrição</label>
-        <input id="clienteEntrada" type="text" placeholder="Ex.: Maria — Onix branco (QWE-9Z87) — dianteiro + serviço (troca coxim)">
-        <div class="hint">
-          Use <b>Nome — Carro/placa — peça/observação</b>. Ex.: João — Celta prata (ABC-1D23) — traseiro vazando.
-        </div>
+        <input id="clienteEntrada" type="text" placeholder="Ex.: JOÃO — CELTA (ABC-1D23) — DIANTEIRO + SERVIÇO">
+        <div class="hint">Use <b>NOME — CARRO/PLACA — PEÇA/OBS</b>.</div>
       </div>
+
       <div>
         <label>Tipo</label>
         <select id="tipoEntrada">
@@ -114,45 +119,74 @@
           <option>Traseiro</option>
           <option>Dianteiro + Traseiro</option>
           <option>Dianteiro + Traseiro + Serviço</option>
+          <option>Amortecedor Central</option>
           <option>Serviço</option>
           <option>Ferro Velho</option>
           <option>Hastes</option>
         </select>
       </div>
+
       <div id="divServico" style="display:none">
         <label>Descrição do Serviço</label>
-        <input id="descricaoServico" type="text" placeholder="Ex.: Troca de coxim, alinhamento..." />
+        <input id="descricaoServico" type="text" placeholder="Ex.: TROCA DE COXIM, BATEDOR..."/>
       </div>
+
+      <div>
+        <label>Instalação</label>
+        <select id="instalacaoEntrada">
+          <option>Instalado na Oficina</option>
+          <option>Amortecedor Fora</option>
+        </select>
+      </div>
+
       <div>
         <label>Qtd</label>
         <input id="qtdEntrada" type="number" value="1" min="1">
       </div>
+
       <div>
-        <label>Forma</label>
-        <select id="formaEntrada">
-          <option>Pix</option>
-          <option>Cartão</option>
-          <option>Dinheiro</option>
-        </select>
+        <label>Valor Total (R$)</label>
+        <input id="valorEntrada" type="number" step="0.01" placeholder="0,00">
       </div>
-      <div>
-        <label>Valor (R$)</label>
-        <input id="valorEntrada" type="number" step="0.01">
+
+      <div style="flex-basis:100%"></div>
+
+      <div style="flex-basis:100%">
+        <label>Pagamento (pode combinar)</label>
+        <div class="pay-row">
+          <div class="pay-item">
+            <input id="payPixChk" type="checkbox" checked>
+            <span>Pix</span>
+            <input id="payPixVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+          <div class="pay-item">
+            <input id="payCartaoChk" type="checkbox">
+            <span>Cartão</span>
+            <input id="payCartaoVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+          <div class="pay-item">
+            <input id="payDinChk" type="checkbox">
+            <span>Dinheiro</span>
+            <input id="payDinVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+        </div>
+        <div class="hint">A soma dos valores selecionados deve bater com o <b>Valor Total</b>.</div>
       </div>
     </div>
+
     <div class="toolbar">
       <button onclick="adicionarEntrada()">+ Adicionar Entrada</button>
     </div>
+
     <table id="tabelaEntradas">
       <thead>
         <tr>
-          <th>Data</th><th>Descrição</th><th>Tipo</th><th>Qtd</th><th>Forma</th><th>Valor</th><th>Ações</th>
+          <th>Data</th><th>Descrição</th><th>Tipo</th><th>Qtd</th><th>Instalação</th><th>Pagamento</th><th>Valor</th><th>Ações</th>
         </tr>
       </thead>
       <tbody></tbody>
     </table>
   </div>
-
   <!-- Saídas -->
   <div class="bloco" id="blocoSaidas">
     <h2>Saídas</h2>
@@ -163,14 +197,14 @@
         <label>Categoria</label>
         <select id="categoriaSaida">
           <option>Alimentação</option>
+          <option>Tinta e Tinner</option>
+          <option>Supermercado</option>
+          <option>Outros</option>
+          <option>Peças</option>
           <option>Compra de Carcaça</option>
           <option>Disco do Esmeril</option>
           <option>Ferramentas</option>
           <option>Órgônio/Nitrogênio</option>
-          <option>Outros</option>
-          <option>Peças</option>
-          <option>Supermercado</option>
-          <option>Tinta e Tinner</option>
           <option>Transporte</option>
           <option>Vareta de Solda</option>
         </select>
@@ -182,9 +216,7 @@
     </div>
     <table id="tabelaSaidas">
       <thead>
-        <tr>
-          <th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ações</th>
-        </tr>
+        <tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Valor</th><th>Ações</th></tr>
       </thead>
       <tbody></tbody>
     </table>
@@ -224,17 +256,76 @@
 </div>
 
 <div id="printArea" style="display:none"></div>
+<!-- MODAL DE EDIÇÃO DE ENTRADA -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal">
+    <h3>Editar Entrada</h3>
+    <div class="form-grid">
+      <div><label>Data</label><input id="m_data" type="date"></div>
+      <div><label>Descrição</label><input id="m_cliente" type="text"></div>
+      <div>
+        <label>Tipo</label>
+        <select id="m_tipo">
+          <option>Dianteiro</option>
+          <option>Traseiro</option>
+          <option>Dianteiro + Traseiro</option>
+          <option>Dianteiro + Traseiro + Serviço</option>
+          <option>Amortecedor Central</option>
+          <option>Serviço</option>
+          <option>Ferro Velho</option>
+          <option>Hastes</option>
+        </select>
+      </div>
+      <div id="m_divServico" style="display:none">
+        <label>Descrição do Serviço</label>
+        <input id="m_descServico" type="text"/>
+      </div>
+      <div>
+        <label>Instalação</label>
+        <select id="m_instalacao">
+          <option>Instalado na Oficina</option>
+          <option>Amortecedor Fora</option>
+        </select>
+      </div>
+      <div><label>Qtd</label><input id="m_qtd" type="number" min="1"></div>
+      <div><label>Valor Total (R$)</label><input id="m_valor" type="number" step="0.01"></div>
+
+      <div style="flex-basis:100%">
+        <label>Pagamento</label>
+        <div class="pay-row">
+          <div class="pay-item">
+            <input id="m_payPixChk" type="checkbox">
+            <span>Pix</span>
+            <input id="m_payPixVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+          <div class="pay-item">
+            <input id="m_payCartaoChk" type="checkbox">
+            <span>Cartão</span>
+            <input id="m_payCartaoVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+          <div class="pay-item">
+            <input id="m_payDinChk" type="checkbox">
+            <span>Dinheiro</span>
+            <input id="m_payDinVal" type="number" step="0.01" placeholder="0,00">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="secondary" onclick="fecharModal()">Cancelar</button>
+      <button onclick="salvarEdicaoEntrada()">Salvar</button>
+    </div>
+  </div>
+</div>
 
 <!-- ========================== APP SCRIPT (com Firebase) ========================== -->
 <script type="module">
-  // Firebase SDKs
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
     onSnapshot, getDocs, query, orderBy, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // === CONFIG FIREBASE DO SEU PROJETO ===
   const firebaseConfig = {
     apiKey: "AIzaSyCaaZf78WgruFolJ0FfLKrn7cKjsS00dc0",
     authDomain: "realcar-caixa.firebaseapp.com",
@@ -244,10 +335,8 @@
     appId: "1:853035037951:web:5ae763aa016d204acfc8ca"
   };
 
-  // === INIT APP & DB ===
   const appFB = initializeApp(firebaseConfig);
   const db = getFirestore(appFB);
-
   // ====== Login ======
   const usuarioPadrao="admin", senhaPadrao="12345";
   function fazerLogin(){
@@ -267,7 +356,6 @@
   }
   window.fazerLogin=fazerLogin;
 
-  // enter no login
   document.addEventListener('DOMContentLoaded', () => {
     const senhaInput = document.getElementById('senha');
     if (senhaInput) {
@@ -277,29 +365,44 @@
     }
   });
 
-  // ====== Estado em memória (renderização) ======
+  // ====== Estado ======
   let entradas=[], entradasIDs=[];
   let saidas=[], saidasIDs=[];
+  let editIndex = -1; // índice que está sendo editado (entradas)
 
   // ====== Utils ======
   const hojeISO = ()=> new Date().toLocaleDateString('fr-CA'); // yyyy-mm-dd
   const BRL = v => (parseFloat(v||0)).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
   const esc = s => String(s??"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[m]));
-  const parseNum = v => parseFloat(String(v).replace(',','.'));
+  const parseNum = v => parseFloat(String(v||0).replace(',','.'))||0;
 
-  // ====== Inicialização de UI + stream realtime ======
+  function somaPag(p){ return (parseNum(p?.pix)+parseNum(p?.cartao)+parseNum(p?.dinheiro)); }
+  function fmtPag(p){
+    const parts=[];
+    if(parseNum(p?.pix)>0) parts.push(`Pix ${BRL(p.pix)}`);
+    if(parseNum(p?.cartao)>0) parts.push(`Cartão ${BRL(p.cartao)}`);
+    if(parseNum(p?.dinheiro)>0) parts.push(`Dinheiro ${BRL(p.dinheiro)}`);
+    return parts.join(" + ") || "-";
+  }
+
+  // ====== Init ======
   function init(){
-    // mostra/oculta campo de serviço
+    // Alternar campo de serviço em "adicionar"
     document.getElementById("tipoEntrada").addEventListener("change", () => {
       const tipo = document.getElementById("tipoEntrada").value;
       document.getElementById("divServico").style.display =
         (tipo === "Serviço" || tipo === "Dianteiro + Traseiro + Serviço") ? "block" : "none";
     });
 
+    // Default datas
     document.getElementById('dataEntrada').value = hojeISO();
     document.getElementById('dataSaida').value   = hojeISO();
 
-    // ouvintes em tempo real Firestore
+    // ATIVAR FILTRO DO DIA ATUAL POR PADRÃO
+    const fd = document.getElementById('filtroDia');
+    fd.value = hojeISO();
+
+    // Stream realtime
     onSnapshot(query(collection(db,'entradas'), orderBy('data','asc')), snap=>{
       entradas = snap.docs.map(d=>d.data());
       entradasIDs = snap.docs.map(d=>d.id);
@@ -311,81 +414,141 @@
       render();
     });
   }
-
-  // ====== Filtros/Busca ======
-  function filtroAtivo(dataISO){
-    const dia=document.getElementById('filtroDia').value;
-    const mes=document.getElementById('filtroMes').value;
-    if(dia) return dataISO===dia;
-    if(mes) return (dataISO||'').startsWith(mes);
-    return true;
-  }
-  function atendeBuscaEntrada(e,q){
-    const s=(q||'').toLowerCase();
-    return (e.cliente||'').toLowerCase().includes(s) ||
-           (e.tipo||'').toLowerCase().includes(s) ||
-           (e.forma||'').toLowerCase().includes(s) ||
-           (e.descricao||'').toLowerCase().includes(s);
-  }
-  function atendeBuscaSaida(x,q){
-    const s=(q||'').toLowerCase();
-    return (x.descricao||'').toLowerCase().includes(s) ||
-           (x.categoria||'').toLowerCase().includes(s);
-  }
-
-  // ====== CRUD Entradas (Firestore) ======
+  // ====== CRUD Entradas ======
   async function adicionarEntrada(){
+    const total = parseNum(document.getElementById('valorEntrada').value);
+    const p = {
+      pix: document.getElementById('payPixChk').checked ? parseNum(document.getElementById('payPixVal').value) : 0,
+      cartao: document.getElementById('payCartaoChk').checked ? parseNum(document.getElementById('payCartaoVal').value) : 0,
+      dinheiro: document.getElementById('payDinChk').checked ? parseNum(document.getElementById('payDinVal').value) : 0,
+    };
+    if (Math.abs(somaPag(p) - total) > 0.009){
+      alert('A soma dos pagamentos (Pix/Cartão/Dinheiro) precisa bater com o Valor Total.');
+      return;
+    }
+
+    const tipoSel = document.getElementById('tipoEntrada').value;
     const nova = {
       data: document.getElementById('dataEntrada').value || hojeISO(),
       cliente: (document.getElementById('clienteEntrada').value || '').trim().toUpperCase(),
-      tipo: document.getElementById('tipoEntrada').value,
+      tipo: tipoSel,
       qtd: parseInt(document.getElementById('qtdEntrada').value || '1', 10),
-      forma: document.getElementById('formaEntrada').value,
-      valor: parseNum(document.getElementById('valorEntrada').value),
-      descricao: ['Serviço', 'Dianteiro + Traseiro + Serviço'].includes(document.getElementById('tipoEntrada').value)
+      instalacao: document.getElementById('instalacaoEntrada').value,
+      pagamento: p,
+      valor: total,
+      forma: fmtPag(p), // para busca legada
+      descricao: (tipoSel === 'Serviço' || tipoSel === 'Dianteiro + Traseiro + Serviço')
         ? (document.getElementById('descricaoServico').value || '').trim().toUpperCase()
         : '',
       createdAt: serverTimestamp()
     };
-    if(!nova.cliente || isNaN(nova.valor) || nova.valor <= 0){
+
+    if(!nova.cliente || nova.valor <= 0){
       alert('Preencha a descrição e um valor válido.'); return;
     }
+
     await addDoc(collection(db,'entradas'), nova);
+
+    // limpar ui
     document.getElementById('clienteEntrada').value='';
     document.getElementById('qtdEntrada').value='1';
     document.getElementById('valorEntrada').value='';
     document.getElementById('descricaoServico').value='';
     document.getElementById('divServico').style.display='none';
+    document.getElementById('payPixChk').checked=true; document.getElementById('payPixVal').value='';
+    document.getElementById('payCartaoChk').checked=false; document.getElementById('payCartaoVal').value='';
+    document.getElementById('payDinChk').checked=false; document.getElementById('payDinVal').value='';
+
     alert("✅ Entrada adicionada com sucesso!");
   }
   window.adicionarEntrada = adicionarEntrada;
 
-  async function editarEntrada(idx){
-    const e=entradas[idx]; if(!e) return;
-    const cliente=prompt('Descrição:', e.cliente); if(cliente===null) return;
-    const tipo=prompt('Tipo:', e.tipo); if(tipo===null) return;
-    const qtd=prompt('Quantidade:', e.qtd); if(qtd===null||isNaN(parseInt(qtd))) return;
-    const forma=prompt('Forma (Pix/Cartão/Dinheiro):', e.forma); if(forma===null) return;
-    const valor=prompt('Valor (R$):', e.valor); if(valor===null||isNaN(parseNum(valor))) return;
-    const desc=prompt('Descrição do serviço (opcional):', e.descricao||''); if(desc===null) return;
+  // ====== Modal Editar Entrada ======
+  function abrirModalEntrada(i){
+    const e=entradas[i]; if(!e) return;
+    editIndex = i;
+    const bd = document.getElementById('modalBackdrop');
+    document.getElementById('m_data').value = e.data || hojeISO();
+    document.getElementById('m_cliente').value = e.cliente || '';
+    document.getElementById('m_tipo').value = e.tipo || 'Dianteiro';
+    document.getElementById('m_instalacao').value = e.instalacao || 'Instalado na Oficina';
+    document.getElementById('m_qtd').value = e.qtd || 1;
+    document.getElementById('m_valor').value = e.valor || 0;
 
-    const novo={...e,
-      cliente:cliente.trim(),
-      tipo, qtd:parseInt(qtd,10),
-      forma, valor:parseNum(valor),
-      descricao:desc
+    // Serviço
+    const precisaServico = (e.tipo === 'Serviço' || e.tipo === 'Dianteiro + Traseiro + Serviço');
+    document.getElementById('m_divServico').style.display = precisaServico ? 'block' : 'none';
+    document.getElementById('m_descServico').value = e.descricao || '';
+
+    // pagamentos
+    const p = e.pagamento || {};
+    const pix = parseNum(p.pix), cartao = parseNum(p.cartao), dinheiro = parseNum(p.dinheiro);
+    document.getElementById('m_payPixChk').checked = pix>0; document.getElementById('m_payPixVal').value = pix||'';
+    document.getElementById('m_payCartaoChk').checked = cartao>0; document.getElementById('m_payCartaoVal').value = cartao||'';
+    document.getElementById('m_payDinChk').checked = dinheiro>0; document.getElementById('m_payDinVal').value = dinheiro||'';
+
+    bd.style.display='flex';
+
+    // alternar servico se tipo mudar
+    document.getElementById('m_tipo').onchange = () => {
+      const t = document.getElementById('m_tipo').value;
+      document.getElementById('m_divServico').style.display =
+        (t==='Serviço' || t==='Dianteiro + Traseiro + Serviço') ? 'block':'none';
     };
-    await updateDoc(doc(db,'entradas', entradasIDs[idx]), novo);
   }
-  window.editarEntrada=editarEntrada;
+  window.abrirModalEntrada = abrirModalEntrada;
+
+  function fecharModal(){
+    document.getElementById('modalBackdrop').style.display='none';
+    editIndex = -1;
+  }
+  window.fecharModal = fecharModal;
+
+  async function salvarEdicaoEntrada(){
+    if(editIndex<0) return;
+    const e = entradas[editIndex];
+    const id = entradasIDs[editIndex];
+
+    const total = parseNum(document.getElementById('m_valor').value);
+    const p = {
+      pix: document.getElementById('m_payPixChk').checked ? parseNum(document.getElementById('m_payPixVal').value) : 0,
+      cartao: document.getElementById('m_payCartaoChk').checked ? parseNum(document.getElementById('m_payCartaoVal').value) : 0,
+      dinheiro: document.getElementById('m_payDinChk').checked ? parseNum(document.getElementById('m_payDinVal').value) : 0,
+    };
+    if (Math.abs(somaPag(p) - total) > 0.009){
+      alert('A soma dos pagamentos (Pix/Cartão/Dinheiro) precisa bater com o Valor Total.'); return;
+    }
+
+    const novo = {
+      ...e,
+      data: document.getElementById('m_data').value || hojeISO(),
+      cliente: (document.getElementById('m_cliente').value||'').trim().toUpperCase(),
+      tipo: document.getElementById('m_tipo').value,
+      instalacao: document.getElementById('m_instalacao').value,
+      qtd: parseInt(document.getElementById('m_qtd').value||'1',10),
+      valor: total,
+      pagamento: p,
+      forma: fmtPag(p),
+    };
+
+    const t = novo.tipo;
+    if (t === 'Serviço' || t === 'Dianteiro + Traseiro + Serviço'){
+      novo.descricao = (document.getElementById('m_descServico').value||'').trim().toUpperCase();
+    } else {
+      novo.descricao = '';
+    }
+
+    await updateDoc(doc(db,'entradas', id), novo);
+    fecharModal();
+  }
+  window.salvarEdicaoEntrada = salvarEdicaoEntrada;
 
   async function excluirEntrada(idx){
     if(!confirm('Excluir esta entrada?')) return;
     await deleteDoc(doc(db,'entradas', entradasIDs[idx]));
   }
   window.excluirEntrada=excluirEntrada;
-
-  // ====== CRUD Saídas (Firestore) ======
+  // ====== CRUD Saídas ======
   async function adicionarSaida(){
     const nova = {
       data: document.getElementById('dataSaida').value || hojeISO(),
@@ -394,7 +557,7 @@
       valor: parseNum(document.getElementById('valorSaida').value),
       createdAt: serverTimestamp()
     };
-    if(!nova.descricao || isNaN(nova.valor) || nova.valor <= 0){
+    if(!nova.descricao || nova.valor <= 0){
       alert('Preencha descrição e valor válido.'); return;
     }
     await addDoc(collection(db,'saidas'), nova);
@@ -410,7 +573,7 @@
     const cat=prompt('Categoria:', s.categoria); if(cat===null) return;
     const val=prompt('Valor (R$):', s.valor); if(val===null||isNaN(parseNum(val))) return;
 
-    const novo={...s, descricao:desc.trim(), categoria:cat, valor:parseNum(val)};
+    const novo={...s, descricao:desc.trim().toUpperCase(), categoria:cat, valor:parseNum(val)};
     await updateDoc(doc(db,'saidas', saidasIDs[idx]), novo);
   }
   window.editarSaida=editarSaida;
@@ -420,6 +583,28 @@
     await deleteDoc(doc(db,'saidas', saidasIDs[idx]));
   }
   window.excluirSaida=excluirSaida;
+
+  // ====== Filtros/Busca ======
+  function filtroAtivo(dataISO){
+    const dia=document.getElementById('filtroDia').value;
+    const mes=document.getElementById('filtroMes').value;
+    if(dia) return (dataISO||'')===dia;
+    if(mes) return (dataISO||'').startsWith(mes);
+    return true;
+  }
+  function atendeBuscaEntrada(e,q){
+    const s=(q||'').toLowerCase();
+    return (e.cliente||'').toLowerCase().includes(s) ||
+           (e.tipo||'').toLowerCase().includes(s) ||
+           (e.forma||'').toLowerCase().includes(s) ||
+           (e.instalacao||'').toLowerCase().includes(s) ||
+           (e.descricao||'').toLowerCase().includes(s);
+  }
+  function atendeBuscaSaida(x,q){
+    const s=(q||'').toLowerCase();
+    return (x.descricao||'').toLowerCase().includes(s) ||
+           (x.categoria||'').toLowerCase().includes(s);
+  }
 
   // ====== Render ======
   function render(){
@@ -440,10 +625,11 @@
         <td>${esc(e.cliente||'')}</td>
         <td>${esc((e.tipo||'') + (e.descricao? ' - '+e.descricao:''))}</td>
         <td>${e.qtd||1}</td>
-        <td>${esc(e.forma||'')}</td>
+        <td>${esc(e.instalacao||'-')}</td>
+        <td>${esc(fmtPag(e.pagamento||{}))}</td>
         <td>${BRL(e.valor||0)}</td>
         <td class="nowrap">
-          <button class="secondary" onclick="editarEntrada(${i})">✏️</button>
+          <button class="secondary" onclick="abrirModalEntrada(${i})">✏️</button>
           <button class="danger" onclick="excluirEntrada(${i})">🗑️</button>
         </td>
       </tr>`).join('');
@@ -463,17 +649,17 @@
       </tr>`).join('');
 
     // Totais
-    const totE=ent.reduce((acc,e)=>acc+(parseFloat(e.valor)||0),0);
-    const totS=sai.reduce((acc,e)=>acc+(parseFloat(e.valor)||0),0);
+    const totE=ent.reduce((acc,e)=>acc+(parseNum(e.valor)||0),0);
+    const totS=sai.reduce((acc,e)=>acc+(parseNum(e.valor)||0),0);
     document.getElementById('totalEntradas').textContent=BRL(totE);
     document.getElementById('totalSaidas').textContent=BRL(totS);
     const saldoEl=document.getElementById('saldo');
     saldoEl.textContent=BRL(totE-totS);
     saldoEl.style.color=(totE-totS)>=0? 'var(--ok)' : 'var(--bad)';
 
-    const pix=ent.filter(e=>e.forma==='Pix').reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
-    const cartao=ent.filter(e=>e.forma==='Cartão').reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
-    const dinheiro=ent.filter(e=>e.forma==='Dinheiro').reduce((s,e)=>s+(parseFloat(e.valor)||0),0);
+    const pix=ent.reduce((s,e)=>s+parseNum(e?.pagamento?.pix),0);
+    const cartao=ent.reduce((s,e)=>s+parseNum(e?.pagamento?.cartao),0);
+    const dinheiro=ent.reduce((s,e)=>s+parseNum(e?.pagamento?.dinheiro),0);
     document.getElementById('totalPix').textContent=BRL(pix);
     document.getElementById('totalCartao').textContent=BRL(cartao);
     document.getElementById('totalDinheiro').textContent=BRL(dinheiro);
@@ -482,25 +668,27 @@
 
   function limparFiltros(){
     document.getElementById('campoBusca').value='';
-    document.getElementById('filtroDia').value='';
+    document.getElementById('filtroDia').value=hojeISO(); // volta pro dia atual!
     document.getElementById('filtroMes').value='';
     render();
   }
   window.limparFiltros=limparFiltros;
-
   // ====== CSV / Backup / Import ======
   function csvEsc(s){ if(s==null) return ''; s=String(s); return /[,\";\n]/.test(s)? `"${s.replace(/\"/g,'""')}"` : s; }
 
   async function exportarCSV(){
-    // baixar todos do servidor para consistência do backup/export
     const eSnap=await getDocs(collection(db,'entradas'));
     const sSnap=await getDocs(collection(db,'saidas'));
     const ent = eSnap.docs.map(d=>d.data());
     const sai = sSnap.docs.map(d=>d.data());
 
-    let csv='Tipo,Data,Descrição,Detalhes,Valor\n';
-    ent.forEach(e=> csv+=`Entrada,${e.data||''},${csvEsc(e.cliente||'')},${csvEsc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))},${e.valor||0}\n`);
-    sai.forEach(s=> csv+=`Saída,${s.data||''},${csvEsc(s.descricao||'')},${csvEsc(s.categoria||'')},${s.valor||0}\n`);
+    let csv='Tipo,Data,Descrição,Detalhes,Instalação,Pagamento,Valor\n';
+    ent.forEach(e=>{
+      csv+=`Entrada,${e.data||''},${csvEsc(e.cliente||'')},${csvEsc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))},${csvEsc(e.instalacao||'')},${csvEsc(fmtPag(e.pagamento||{}))},${e.valor||0}\n`;
+    });
+    sai.forEach(s=>{
+      csv+=`Saída,${s.data||''},${csvEsc(s.descricao||'')},${csvEsc(s.categoria||'')},,,${s.valor||0}\n`;
+    });
 
     const blob=new Blob(["\uFEFF"+csv],{type:'text/csv;charset=utf-8;'});
     const a=document.createElement('a');
@@ -557,8 +745,8 @@
     const ent=entradas.filter(e=>filtra(e.data)&&(!busca||atendeBuscaEntrada(e,busca)));
     const sai=saidas.filter(s=>filtra(s.data)&&(!busca||atendeBuscaSaida(s,busca)));
 
-    const totE=ent.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
-    const totS=sai.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
+    const totE=ent.reduce((a,e)=>a+(parseNum(e.valor)||0),0);
+    const totS=sai.reduce((a,e)=>a+(parseNum(e.valor)||0),0);
 
     const area=document.getElementById('printArea');
     const titulo= dia? `Relatório do dia ${dia}` : (mes? `Relatório do mês ${mes}` : 'Relatório geral');
@@ -566,7 +754,7 @@
       <div style="font-family:Arial;color:#000;width:720px;margin:auto">
         <h2 style="margin:6px 0">📄 ${titulo} – Real Car Amortecedores</h2><hr/>
         <h3>Entradas</h3>
-        <ul>${ent.map(e=>`<li>${e.data} – ${esc(e.cliente)} (${esc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))}, ${esc(e.forma||'')}) – ${BRL(e.valor)}</li>`).join('')}</ul>
+        <ul>${ent.map(e=>`<li>${e.data} – ${esc(e.cliente)} (${esc((e.tipo||'')+(e.descricao? ' - '+e.descricao:''))}, ${esc(e.instalacao||'')}, ${esc(fmtPag(e.pagamento||{}))}) – ${BRL(e.valor)}</li>`).join('')}</ul>
         <h3>Saídas</h3>
         <ul>${sai.map(s=>`<li>${s.data} – ${esc(s.descricao)} (${esc(s.categoria)}) – ${BRL(s.valor)}</li>`).join('')}</ul>
         <hr/><p><b>Total Entradas:</b> ${BRL(totE)}<br><b>Total Saídas:</b> ${BRL(totS)}<br><b>Saldo:</b> ${BRL(totE-totS)}</p>
@@ -579,33 +767,28 @@
     const mes=document.getElementById('filtroMes').value || new Date().toISOString().slice(0,7);
     const ent=entradas.filter(e=>String(e.data||'').startsWith(mes));
     const sai=saidas.filter(s=>String(s.data||'').startsWith(mes));
-    const totE=ent.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
-    const totS=sai.reduce((a,e)=>a+(parseFloat(e.valor)||0),0);
+    const totE=ent.reduce((a,e)=>a+(parseNum(e.valor)||0),0);
+    const totS=sai.reduce((a,e)=>a+(parseNum(e.valor)||0),0);
     alert(`📅 Fechamento ${mes}\nEntradas: ${BRL(totE)}\nSaídas: ${BRL(totS)}\nSaldo: ${BRL(totE-totS)}`);
   }
   window.fecharMes=fecharMes;
 
-  // ====== Destruir tudo (protegido por senha) ======
+  // ====== Apagar tudo ======
   async function apagarTudo(){
     const senha = prompt("Digite a senha para confirmar:");
     if(senha !== "12345"){ alert("❌ Senha incorreta!"); return; }
     if(!confirm('Tem certeza que deseja apagar TODOS os dados?')) return;
 
-    // apaga entradas
     const eSnap = await getDocs(collection(db,'entradas'));
-    for (const d of eSnap.docs) {
-      await deleteDoc(doc(db,'entradas', d.id));
-    }
-    // apaga saídas
+    for (const d of eSnap.docs) await deleteDoc(doc(db,'entradas', d.id));
     const sSnap = await getDocs(collection(db,'saidas'));
-    for (const d of sSnap.docs) {
-      await deleteDoc(doc(db,'saidas', d.id));
-    }
+    for (const d of sSnap.docs) await deleteDoc(doc(db,'saidas', d.id));
+
     alert("✅ Todos os dados foram apagados do Firestore.");
   }
   window.apagarTudo=apagarTudo;
+
 </script>
 
-<!--Fim-->
 </body>
 </html>
