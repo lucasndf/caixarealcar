@@ -639,7 +639,7 @@
     });
   }
 
-  // ====== Extras (AQUI ESTÁ A REGRA DE PERMISSÃO) ======
+  // ====== Extras ======
   function renderExtras(){
     const tb = document.querySelector('#tabelaExtras tbody');
     tb.innerHTML = extras.map((it,i)=>{
@@ -647,41 +647,36 @@
         it.obs  ? `OBS: ${esc(it.obs)}`   : '',
         it.serv ? `SERVIÇO: ${esc(it.serv)}` : ''
       ].filter(Boolean).join(' — ');
-      const isToday = (document.getElementById('dataEntrada').value || '') === today;
-      const canEdit = role === 'admin' || (role === 'func' && isToday);
       return `
         <tr>
           <td>${esc(it.tipo)}</td>
           <td>${it.qtd}</td>
           <td>${descricao || '-'}</td>
           <td class="nowrap">
-            ${canEdit ? `
-              <button class="secondary" type="button" onclick="editarExtra(${i})">✏️</button>
-              <button class="danger" type="button" onclick="removerExtra(${i})">🗑️</button>
-            ` : ''}
+            ${role==='admin' ? `<button class="danger" type="button" onclick="removerExtra(${i})">🗑️</button>` : ''}
           </td>
         </tr>`;
     }).join('');
     updateInstalacaoVisibility();
   }
-  window.removerExtra = (i)=>{
-    const isToday = (document.getElementById('dataEntrada').value || '') === today;
-    if(!(role==='admin' || (role==='func' && isToday))) return alert('Sem permissão para remover extras deste dia.');
-    extras.splice(i,1); renderExtras();
-  };
-  function editarExtra(i){
-    const isToday = (document.getElementById('dataEntrada').value || '') === today;
-    if(!(role==='admin' || (role==='func' && isToday))) return alert('Sem permissão para editar extras deste dia.');
-    const ex = extras[i]; if(!ex) return;
-    const novoTipo = prompt("Novo tipo:", ex.tipo); if(novoTipo===null) return;
-    const novaQtd = parseInt(prompt("Nova quantidade:", ex.qtd),10);
-    if(isNaN(novaQtd)||novaQtd<=0) return alert("Quantidade inválida.");
-    const novaObs = prompt("Nova observação:", ex.obs||"");
-    const novoServ = prompt("Novo serviço:", ex.serv||"");
-    extras[i] = { tipo: novoTipo, qtd: novaQtd, obs: (novaObs||'').toUpperCase(), serv: (novoServ||'').toUpperCase() };
+  window.removerExtra = (i)=>{ extras.splice(i,1); renderExtras(); };
+
+  function addExtra(){
+    const exQtd  = parseInt(document.getElementById('exQtd').value || '1', 10);
+    const exTipo = document.getElementById('exTipo').value;
+    const exObs  = (document.getElementById('exObs').value || '').trim().toUpperCase();
+    const exServ = document.getElementById('exDescBox').hidden ? '' : (document.getElementById('exDesc').value || '').trim().toUpperCase();
+
+    if(exQtd<=0){ alert('Informe uma quantidade válida.'); return; }
+    if(!document.getElementById('exDescBox').hidden && !exServ){
+      alert('Descreva o serviço.'); return;
+    }
+    extras.push({ tipo: exTipo, qtd: exQtd, obs: exObs, serv: exServ });
+    document.getElementById('exQtd').value = 1;
+    document.getElementById('exObs').value = '';
+    document.getElementById('exDesc').value = '';
     renderExtras();
   }
-  window.editarExtra = editarExtra;
 
   // ====== CRUD Entradas ======
   async function adicionarEntrada(){
@@ -696,8 +691,10 @@
     if(!cliente){ alert('Informe o cliente'); return; }
     if(qtd<=0){ alert('Quantidade inválida'); return; }
 
+    // esconder instalação se todos forem Ferro/Hastes
     if(allItensFerroHastes()) instalacao = '';
 
+    // pagamento
     const formaSel = document.getElementById('formaPagamento').value;
     let pagamento = { pix:0, dinheiro:0, cartao:0 };
     let total = 0;
@@ -719,7 +716,7 @@
     const nova = {
       data, cliente,
       tipo: tipoSel, qtd, descricao: descSrv,
-      extras,
+      extras, // salva array completo
       instalacao,
       pagamento, valor: total,
       forma: (formaSel==='Combinado') ? fmtPag(pagamento) : formaSel,
@@ -747,6 +744,7 @@
     const e=entradas[realIndex]; if(!e) return;
     editIndex = realIndex;
 
+    // preencher
     document.getElementById('m_data').value = e.data || today;
     document.getElementById('m_cliente').value = e.cliente || '';
     document.getElementById('m_tipo').value = e.tipo || 'Dianteiro';
@@ -928,7 +926,7 @@
     const ent = entradas.map((e,idx)=>({e,idx}))
       .filter(o=>filtroAtivo(o.e.data))
       .filter(o=>{
-        if(role!=='admin'){ return true; }
+        if(role!=='admin'){ return true; } // sem busca pra func (campo desativado)
         const txt = (o.e.cliente + JSON.stringify(o.e.extras||[]) + (o.e.forma||'') + (o.e.instalacao||'') + (o.e.tipo||'') + (o.e.descricao||'')).toLowerCase();
         return !busca || txt.includes(busca);
       });
